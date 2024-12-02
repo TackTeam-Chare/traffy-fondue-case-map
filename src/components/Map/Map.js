@@ -11,7 +11,7 @@ import NextImage from "next/image";
 import Link from "next/link";
 import { FaMapMarkerAlt, FaInfoCircle, FaDirections, FaRoute, FaTag } from "react-icons/fa";
 
-const Map = ({
+const MapSearch = ({
   isLoaded,
   userLocation,
   mapCenter,
@@ -43,31 +43,37 @@ const Map = ({
   };
 
   const calculateRoutes = useCallback((origin, destination) => {
-    console.log("Calculating routes with:", { origin, destination });
-  
-    if (!origin || !origin.lat || !origin.lng || !destination || !destination.latitude || !destination.longitude) {
-      console.error("Invalid origin or destination:", { origin, destination });
-      return;
+    if (
+        !origin ||
+        !origin.lat ||
+        !origin.lng ||
+        !destination ||
+        !destination.latitude ||
+        !destination.longitude
+    ) {
+        console.error("Invalid origin or destination coordinates:", { origin, destination });
+        return; // Exit early if inputs are invalid
     }
-  
+
     const directionsService = new window.google.maps.DirectionsService();
     directionsService.route(
-      {
-        origin: { lat: origin.lat, lng: origin.lng },
-        destination: { lat: Number(destination.latitude), lng: Number(destination.longitude) },
-        travelMode: google.maps.TravelMode.DRIVING,
-      },
-      (result, status) => {
-        if (status === google.maps.DirectionsStatus.OK) {
-          setDirections(result);
-        } else {
-          console.error(`Error fetching directions: ${status}`);
+        {
+            origin: { lat: origin.lat, lng: origin.lng },
+            destination: { lat: Number(destination.latitude), lng: Number(destination.longitude) },
+            travelMode: google.maps.TravelMode.DRIVING,
+        },
+        (result, status) => {
+            if (status === google.maps.DirectionsStatus.OK) {
+                setDirections(result);
+            } else {
+                console.error(`Error fetching directions: ${status}`);
+            }
         }
-      }
     );
-  }, []);
+}, []);
+
   
-  
+   // ฟังก์ชันนี้จะถูกสร้างใหม่เมื่อ isLoaded เปลี่ยนแปลง
 
   useEffect(() => {
     // เมื่อ mapRef และตำแหน่งผู้ใช้พร้อม จะย้ายตำแหน่งแผนที่ไปยังตำแหน่งของผู้ใช้
@@ -82,15 +88,12 @@ const Map = ({
     if (
       isLoaded &&
       userLocation &&
+      searchResults.length > 0 &&
+        searchResults[0]?.latitude &&
+        searchResults[0]?.longitude
       (searchResults.length > 0 || nearbyPlaces.length > 0)
     ) {
-        const firstResult = searchResults[0];
-
-        if (!firstResult.latitude || !firstResult.longitude) {
-          console.error("Invalid destination in search results:", firstResult);
-          return;
-        }
-      calculateRoutes(userLocation,firstResult, searchResults, nearbyPlaces);
+      calculateRoutes(userLocation, searchResults, nearbyPlaces);
     }
   }, [isLoaded, userLocation, searchResults, nearbyPlaces, calculateRoutes]); // useEffect จะทำงานเมื่อค่าใดๆ ใน dependency เปลี่ยน
 
@@ -136,16 +139,7 @@ const Map = ({
     },
   ];
 
-  const convertMetersToKilometers = (meters) => {
-    if (!meters && meters !== 0) {
-      return "ไม่ทราบระยะทาง"; // ในกรณีที่ meters เป็น null หรือ undefined
-    }
 
-    if (meters >= 1000) {
-      return (meters / 1000).toFixed(2) + " กิโลเมตร";
-    }
-    return meters.toFixed(0) + " เมตร";
-  };
 
   return (
     <GoogleMap
@@ -167,7 +161,7 @@ const Map = ({
       }}
     >
         {/* วงกลมแสดงตำแหน่งปัจจุบันของผู้ใช้ */}
-        {userLocation &&  userLocation.lat && userLocation.lng &&(
+        {userLocation && (
         <>
           <Marker
             position={userLocation}
@@ -181,9 +175,9 @@ const Map = ({
             center={userLocation}
             radius={radius}
             options={{
-              fillColor: "#4FC3F7",
+              fillColor: "#FF7043",
               fillOpacity: 0.2,
-              strokeColor: "#0288D1",
+              strokeColor: "#FF7043",
               strokeOpacity: 0.5,
               strokeWeight: 2,
             }}
@@ -215,34 +209,33 @@ const Map = ({
          </>
       )}
 
-{searchResults.map((place) => {
-  const lat = Number(place.latitude);
-  const lng = Number(place.longitude);
+      {searchResults.map((place) => {
+        const lat = Number(place.latitude);
+        const lng = Number(place.longitude);
 
-  if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
-    console.warn(`Invalid coordinates for place ID: ${place.id}`, { lat, lng });
-    return null;
-  }
+        if (isNaN(lat) || isNaN(lng)) {
+          console.warn(`Invalid coordinates for place ID: ${place.id}`);
+          return null;
+        }
 
-  return (
-    <Marker
-      key={place.id}
-      position={{ lat, lng }}
-      icon={{
-        url: place.images[0]?.image_url || "/icons/place-nearby.png",
-        scaledSize: new window.google.maps.Size(40, 40),
-      }}
-      animation={hoveredMarkerId === place.id ? google.maps.Animation.BOUNCE : undefined}
-      onMouseOver={() => setHoveredMarkerId(place.id)}
-      onMouseOut={() => setHoveredMarkerId(null)}
-      onClick={() => {
-        onSelectPlace(place);
-        calculateRoutes(userLocation, place);
-      }}
-    />
-  );
-})}
-
+        return (
+          <Marker
+            key={place.id}
+            position={{ lat: Number(place.latitude), lng: Number(place.longitude) }}
+            icon={{
+              url: place.images[0]?.image_url || "/icons/place-nearby.png",
+              scaledSize: new window.google.maps.Size(40, 40),
+            }}
+            animation={hoveredMarkerId === place.id ? google.maps.Animation.BOUNCE : null}
+            onMouseOver={() => setHoveredMarkerId(place.id)}
+            onMouseOut={() => setHoveredMarkerId(null)}
+            onClick={() => {
+              onSelectPlace(place);
+              calculateRoutes(userLocation, place);
+            }}
+          />
+        );
+      })}
 
       {nearbyPlaces.map((place) => {
         const lat = Number(place.latitude);
@@ -354,4 +347,4 @@ const Map = ({
   );
 };
 
-export default Map;
+export default MapSearch;

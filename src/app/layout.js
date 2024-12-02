@@ -27,8 +27,8 @@ const supremeRegular = localFont({
 });
 
 export const metadata = {
-  title: "หน้าแดชบอร์ดฝึกสมาธิ",
-  description: "หน้าแดชบอร์ดฝึกสมาธิ",
+  title: "ตรวจงานที่ดำเนินการเเก้ไขเสร็จสิ้น",
+  description: "หน้าตรวจงานที่ดำเนินการเเก้ไขเสร็จสิ้นทราฟฟี่ฟองดูว์",
 };
 
 export default function RootLayout({ children }) {

@@ -8,11 +8,11 @@ import {
   Circle,
 } from "@react-google-maps/api";
 import NextImage from "next/image";
-import { FaMapMarkerAlt, FaInfoCircle, FaDirections, FaRoute, FaTag } from "react-icons/fa";
+import { FaMapMarkerAlt, FaDirections, FaTag } from "react-icons/fa";
 
 const MapSearch = ({
   isLoaded,
-  userLocation,
+  // userLocation,
   mapCenter,
   searchResults,
   nearbyPlaces,
@@ -26,7 +26,10 @@ const MapSearch = ({
   const [directions, setDirections] = useState(null);
   const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
   const [currentLegIndex, setCurrentLegIndex] = useState(0);
+  const [userLocation, setUserLocation] = useState(null);
+  const watcherIdRef = useRef(null);
 
+  const [destinationReached, setDestinationReached] = useState(false);
   // ฟังก์ชันจัดการเมื่อคลิกบนแผนที่
   const handleMapClick = async (event) => {
     // ดึงพิกัดที่ผู้ใช้คลิกบนแผนที่
@@ -59,7 +62,21 @@ const MapSearch = ({
     }
   };
   
-  
+    // Calculate distance between two points (Haversine formula)
+    const calculateDistance = (lat1, lng1, lat2, lng2) => {
+      const R = 6371e3; // Earth radius in meters
+      const toRad = (value) => (value * Math.PI) / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) *
+          Math.cos(toRad(lat2)) *
+          Math.sin(dLng / 2) *
+          Math.sin(dLng / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c; // Distance in meters
+    };
 
   const calculateRoutes = useCallback((origin, destination) => {
     if (
@@ -90,6 +107,64 @@ const MapSearch = ({
         }
       }
     );
+  }, []);
+
+  useEffect(() => {
+    if (selectedPlace) {
+      watcherIdRef.current = navigator.geolocation.watchPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const newLocation = { lat: latitude, lng: longitude };
+          setUserLocation(newLocation);
+         const distance = calculateDistance(
+            latitude,
+            longitude,
+            selectedPlace.latitude,
+            selectedPlace.longitude
+          );
+
+          if (distance < 50 && !destinationReached) {
+            setDestinationReached(true);
+            navigator.geolocation.clearWatch(watcherIdRef.current);
+            alert("You have reached your destination!");
+          } else if (!destinationReached) {
+            calculateRoutes(newLocation, selectedPlace);
+            if (mapRef.current) {
+              mapRef.current.panTo(newLocation);
+            }
+          }
+        },
+        (error) => {
+          console.error("Error watching position:", error);
+        },
+        {
+          enableHighAccuracy: true,
+          maximumAge: 10000,
+          timeout: 5000,
+        }
+      );
+
+      return () => {
+        if (watcherIdRef.current) {
+          navigator.geolocation.clearWatch(watcherIdRef.current);
+        }
+      };
+    }
+  }, [selectedPlace, calculateRoutes, destinationReached]);
+
+  // ดึงตำแหน่งเริ่มต้นของผู้ใช้
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (error) => console.error("Error fetching initial location:", error)
+      );
+    }
   }, []);
 
   // Display Turn-by-Turn Directions
@@ -270,7 +345,8 @@ const MapSearch = ({
               key={place.id}
               position={{ lat: Number(place.latitude), lng: Number(place.longitude) }}
               icon={{
-                url: place.images[0]?.image_url || "/icons/place-nearby.png",
+                // url: place.images[0]?.image_url || "/icons/location-pin.png",
+                url:"/icons/location-pin.png",
                 scaledSize: new window.google.maps.Size(30, 30),
               }}
               animation={hoveredMarkerId === place.id ? google.maps.Animation.BOUNCE : null}
@@ -299,11 +375,16 @@ const MapSearch = ({
               position={{ lat, lng }}
               icon={{
                 url:
-                  place.images && place.images[0]?.image_url
-                    ? place.images[0].image_url
-                    : "/icons/place-nearby.png",
+               "/icons/location-pin.png",
                 scaledSize: new window.google.maps.Size(30, 30),
               }}
+              // icon={{
+              //   url:
+              //     place.images && place.images[0]?.image_url
+              //       ? place.images[0].image_url
+              //       : "/icons/location-pin.png",
+              //   scaledSize: new window.google.maps.Size(30, 30),
+              // }}
               animation={
                 hoveredMarkerId === place.id ? google.maps.Animation.BOUNCE : undefined
               }
@@ -344,7 +425,7 @@ const MapSearch = ({
                 src={
                   selectedPlace.images && selectedPlace.images[0]?.image_url
                     ? selectedPlace.images[0].image_url
-                    : "/icons/place-nearby.png"
+                    : "/icons/location-pin.png"
                 }
                 alt={selectedPlace.ticket_id}
                 width={100}

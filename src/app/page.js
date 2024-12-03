@@ -1,17 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 import {
   FaMapMarkerAlt,
 } from "react-icons/fa";
 import { Circles } from "react-loader-spinner";
 
 import {
-  fetchPlacesNearbyByCoordinates,
-  searchTouristEntitiesUnified,
-  fetchAllFilters
+  fetchPlacesNearbyByCoordinates
 } from "@/services/api";
 
 import { useJsApiLoader } from "@react-google-maps/api";
@@ -28,61 +24,40 @@ const GeocodingSearchPage = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({
-    seasons: [],
-    districts: [],
-    categories: []
-  });
-  const [searchParams, setSearchParams] = useState({});
- 
   const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 });
   const [isClient, setIsClient] = useState(false);
- 
+
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY
   });
 
   useEffect(() => {
     setIsClient(true); // ตั้งค่าว่าเป็น client-side (เบราว์เซอร์) โดยอัปเดต state
-  
-    // ประกาศฟังก์ชัน async เพื่อโหลดข้อมูลฟิลเตอร์ทั้งหมด
-    const loadFilters = async () => {
-      try {
-        // เรียกใช้ฟังก์ชัน fetchAllFilters() เพื่อดึงข้อมูลฟิลเตอร์
-        const data = await fetchAllFilters();
-        setFilters(data); // บันทึกข้อมูลฟิลเตอร์ใน state
-      } catch (error) {
-        // จัดการข้อผิดพลาดที่เกิดขึ้นระหว่างการดึงข้อมูล
-        console.error("Error fetching filters:", error); // แสดงข้อผิดพลาดใน console
-      }
-    };
-  
-    loadFilters(); // เรียกใช้ฟังก์ชันเพื่อโหลดฟิลเตอร์เมื่อ component ถูก mount
-  }, []); // useEffect จะทำงานเพียงครั้งเดียวเมื่อ component ถูก mount
+  }, []);
 
   useEffect(() => {
     // ตรวจสอบว่ากำลังรันบน client-side (เบราว์เซอร์) หรือไม่
     if (!isClient) return; // ถ้าไม่ใช่ client-side ให้หยุดการทำงานของ useEffect
-  
+
     // ฟังก์ชันสำหรับอัปเดตตำแหน่งผู้ใช้
     const updateLocation = () => {
       setLoading(true); // ตั้งสถานะการโหลดเป็น true เพื่อแสดงว่าเริ่มการดึงข้อมูลตำแหน่ง
-  
+
       // ใช้ navigator.geolocation เพื่อขอตำแหน่งปัจจุบันของผู้ใช้
       navigator.geolocation.getCurrentPosition(
         (position) => {
           // ดึง latitude และ longitude จากตำแหน่งที่ได้รับ
           const { latitude, longitude } = position.coords;
-  
+
           // แสดงตำแหน่งผู้ใช้ใน console สำหรับ debug
           console.log(`User's location: Latitude ${latitude}, Longitude ${longitude}`);
-  
+
           // บันทึกตำแหน่งผู้ใช้ลงใน state
           setUserLocation({ lat: latitude, lng: longitude });
-  
+
           // ดึงข้อมูลสถานที่ใกล้เคียงตามพิกัดที่ได้รับ
           fetchNearbyPlaces(latitude, longitude);
-  
+
           setLoading(false); // ยกเลิกสถานะการโหลดหลังจากดึงข้อมูลสำเร็จ
         },
         (error) => {
@@ -92,21 +67,20 @@ const GeocodingSearchPage = () => {
         }
       );
     };
-  
+
     // เรียกใช้ฟังก์ชัน updateLocation เมื่อ useEffect ทำงาน
     updateLocation();
   }, [isClient]); // useEffect จะทำงานใหม่เมื่อค่า isClient เปลี่ยนแปลง
-  
-  
 
   const fetchNearbyPlaces = async (lat, lng, radius) => {
     try {
       setLoading(true); // ตั้งสถานะการโหลดเป็น true เพื่อแสดงว่ากำลังดึงข้อมูลสถานที่ใกล้เคียง
-  
+
       // เรียกใช้ฟังก์ชัน fetchPlacesNearbyByCoordinates เพื่อดึงข้อมูลสถานที่ใกล้เคียง
       const data = await fetchPlacesNearbyByCoordinates(lat, lng, radius);
-  
+      
       setNearbyPlaces(data); // บันทึกข้อมูลสถานที่ใกล้เคียงลงใน state
+      return Array.isArray(data) ? data : [];
     } catch (error) {
       // จัดการข้อผิดพลาด ถ้าการดึงข้อมูลล้มเหลว
       console.error("Error fetching nearby places:", error); // แสดงข้อผิดพลาดใน console
@@ -116,59 +90,31 @@ const GeocodingSearchPage = () => {
     }
   };
 
-  const searchPlaces = async (params) => {
-    try {
-      setLoading(true); // ตั้งสถานะการโหลดเป็น true เพื่อแสดงว่าเริ่มการค้นหาแล้ว
-      setHasSearched(true); // อัปเดตสถานะเพื่อบอกว่ามีการค้นหาเกิดขึ้น
-  
-      // เรียกใช้ฟังก์ชัน searchTouristEntitiesUnified() เพื่อค้นหาสถานที่โดยส่ง params ไป
-      const data = await searchTouristEntitiesUnified(params);
-  
-      // บันทึกผลลัพธ์การค้นหาใน state
-      setSearchResults(data);
-  
-      if (data.length > 0) { 
-        // ถ้ามีผลลัพธ์การค้นหา ให้ตั้งศูนย์กลางแผนที่ไปที่พิกัดของผลลัพธ์แรก
-        const firstResult = data[0]; // ดึงรายการแรกจากผลลัพธ์
-        setMapCenter({
-          lat: Number(firstResult.latitude), // แปลง latitude เป็นตัวเลข
-          lng: Number(firstResult.longitude) // แปลง longitude เป็นตัวเลข
-        });
-      }
-    } catch (error) {
-      // จัดการข้อผิดพลาด ถ้ามีปัญหาในการค้นหา
-      console.error("Error searching places:", error); // แสดงข้อความผิดพลาดใน console
-      setSearchResults([]); // ล้างผลลัพธ์การค้นหา
-    } finally {
-      setLoading(false); // ไม่ว่าการค้นหาจะสำเร็จหรือเกิดข้อผิดพลาด จะหยุดการโหลดเสมอ
-    }
-  };
-
   const handleCurrentLocationClick = () => {
     // ตรวจสอบว่าฟังก์ชัน geolocation รองรับโดยเบราว์เซอร์หรือไม่
     if (!navigator.geolocation) {
       console.error("Geolocation is not supported by this browser.");
       return; // หากไม่รองรับ ให้หยุดการทำงานของฟังก์ชัน
     }
-  
+
     setLoading(true); // แสดงสถานะการโหลดข้อมูล
-  
+
     // ขอสิทธิ์เข้าถึงตำแหน่งปัจจุบันของผู้ใช้
     navigator.geolocation.getCurrentPosition(
       (position) => {
         // ดึง latitude และ longitude จากตำแหน่งปัจจุบันของผู้ใช้
         const { latitude, longitude } = position.coords;
         console.log(`User's updated location: Latitude ${latitude}, Longitude ${longitude}`);
-  
+
         // อัปเดตตำแหน่งของผู้ใช้ใน state
         setUserLocation({ lat: latitude, lng: longitude });
-  
+
         // อัปเดตตำแหน่งศูนย์กลางของแผนที่
         setMapCenter({ lat: latitude, lng: longitude });
-  
+
         // ดึงข้อมูลสถานที่ใกล้เคียงตามตำแหน่งที่อัปเดต
         fetchNearbyPlaces(latitude, longitude);
-  
+
         setLoading(false); // ยกเลิกสถานะการโหลด
       },
       (error) => {
@@ -181,8 +127,8 @@ const GeocodingSearchPage = () => {
 
   return (
     <div className="container mx-auto p-4 relative">
-  {/* Header */}
-  <div className="text-center mb-6">
+      {/* Header */}
+      <div className="text-center mb-6">
         <h1 className="text-2xl font-bold text-orange-600">ตรวจสอบตำแหน่งงานที่แก้ไข</h1>
         <p className="text-gray-500 text-sm">
           ตรวจสอบตำแหน่งปัจจุบันและดูข้อมูลจุดที่แก้ไขปัญหาใกล้คุณ
@@ -200,27 +146,17 @@ const GeocodingSearchPage = () => {
         </button>
       </div>
 
-
-   
-
-
-
-
-
-
-
-  
       {/* Loading Spinner */}
       {loading && (
-  <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
-    <Circles
-      height="80"
-      width="80"
-      color="#FF7043"
-      ariaLabel="loading-indicator"
-    />
-  </div>
-)}
+        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
+          <Circles
+            height="80"
+            width="80"
+            color="#FF7043"
+            ariaLabel="loading-indicator"
+          />
+        </div>
+      )}
 
       {/* MapComponent Integration */}
       <div className={`w-full h-96 mb-6 ${loading ? "blur-sm" : ""}`}>
@@ -237,10 +173,6 @@ const GeocodingSearchPage = () => {
           />
         )}
       </div>
-
-
-
-
     </div>
   );
 };

@@ -14,12 +14,12 @@ import {
   Check, 
   Building, 
   MessageCircle, 
-  ExternalLink 
+  Star,
+  XCircle
 } from "lucide-react";
 import NextImage from "next/image";
 import ReviewModal from "@/components/Map/ReviewModal";
-import { FaMapMarkerAlt, FaDirections, FaTag } from "react-icons/fa";
-import { HiCheckBadge } from "react-icons/hi2";
+
 const MapSearch = ({
   isLoaded,
   // userLocation,
@@ -425,7 +425,7 @@ const MapSearch = ({
     onCloseClick={() => onSelectPlace(null)}
     options={{
       pixelOffset: new window.google.maps.Size(0, -40),
-      maxWidth: 400
+      maxWidth: 500 
     }}
   >
     <div className="bg-white rounded-2xl shadow-2xl overflow-hidden 
@@ -506,6 +506,54 @@ const MapSearch = ({
               </p>
             </div>
           )}
+          
+          {selectedPlace.reviewSummary && (
+  <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 space-y-3">
+    {/* Header Section */}
+    <div className="text-center">
+      <h4 className="text-base font-bold text-gray-800">
+        สรุปผลโหวต
+      </h4>
+    </div>
+
+
+
+    {/* Votes Breakdown */}
+    <div className="grid grid-cols-2 gap-3">
+      {/* Pass Votes */}
+      <div className="flex flex-col items-center bg-green-50 p-2 rounded-md border border-green-100">
+        <Check className="w-6 h-6 text-green-500" />
+        <p className="text-sm font-medium text-green-600 mt-1">
+          ผ่าน: {selectedPlace.reviewSummary.passCount || 0}
+        </p>
+      </div>
+
+      {/* Fail Votes */}
+      <div className="flex flex-col items-center bg-red-50 p-2 rounded-md border border-red-100">
+        <XCircle className="w-6 h-6 text-red-500" />
+        <p className="text-sm font-medium text-red-600 mt-1">
+          ไม่ผ่าน: {selectedPlace.reviewSummary.failCount || 0}
+        </p>
+      </div>
+    </div>
+
+    {/* Average Stars */}
+    <div className="flex items-center justify-center bg-yellow-50 p-2 rounded-md border border-yellow-100">
+      <Star className="w-6 h-6 text-yellow-500" />
+      <p className="text-sm font-medium text-yellow-600 ml-2">
+        คะแนนเฉลี่ย:{" "}
+        <span className="text-yellow-700 font-bold">
+          {selectedPlace.reviewSummary.averageStars
+            ? selectedPlace.reviewSummary.averageStars.toFixed(1)
+            : "N/A"}
+        </span>
+      </p>
+    </div>
+  </div>
+)}
+
+
+
 
            {/* Action Buttons */}
            <div className="grid grid-cols-2 gap-3 mt-4">

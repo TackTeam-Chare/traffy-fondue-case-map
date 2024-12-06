@@ -4,15 +4,17 @@ const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL
 })
 
-// Function to fetch places nearby by coordinates
+// Function to fetch places nearby by coordinates, including review summaries
 export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius = 5000) => {
   try {
+    // Make a GET request to the backend endpoint
     const response = await api.get(`/places/nearby-by-coordinates`, {
       params: { lat: latitude, lng: longitude, radius },
     });
 
     const data = Array.isArray(response.data) ? response.data : [];
 
+    // Map and transform the data to include review summaries
     return data.map((place) => ({
       id: place.id,
       ticket_id: place.ticket_id,
@@ -21,8 +23,8 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
       organization_action: place.organization_action,
       comment: place.comment,
       coords: place.coords,
-      latitude: parseFloat(place.coords.split(",")[1]), // Ensure proper lat parsing
-      longitude: parseFloat(place.coords.split(",")[0]), // Ensure proper lng parsing
+      latitude: parseFloat(place.coords.split(",")[1]), // Parse latitude
+      longitude: parseFloat(place.coords.split(",")[0]), // Parse longitude
       address: place.address || "No address provided",
       images: [
         { image_url: place.photo_after || "/icons/location-pin.png" },
@@ -30,6 +32,12 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
       ],
       star: place.star || 0,
       view_count: place.view_count || 0,
+      reviewSummary: {
+        totalReviews: place.reviewSummary?.total_reviews || 0,
+        passCount: place.reviewSummary?.pass_count || 0,
+        failCount: place.reviewSummary?.fail_count || 0,
+        averageStars: place.reviewSummary?.average_stars || 0,
+      },
     }));
   } catch (error) {
     console.error("Error fetching places nearby by coordinates:", error);
@@ -37,7 +45,6 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
   }
 };
 
-// ฟังก์ชัน POST เพื่อบันทึกข้อมูลรีวิว
 export const saveReview = async (placeId, reviewerName, reviewStatus, stars, comment) => {
   try {
     const timestamp = new Date().toISOString(); // Current timestamp
@@ -46,7 +53,7 @@ export const saveReview = async (placeId, reviewerName, reviewStatus, stars, com
       reviewerName,
       reviewStatus,
       stars,
-      comment, // Ensure comment is included
+      comment,
       timestamp,
     });
 
@@ -56,4 +63,3 @@ export const saveReview = async (placeId, reviewerName, reviewStatus, stars, com
     throw new Error(error.response?.data?.error || "Error saving review");
   }
 };
-

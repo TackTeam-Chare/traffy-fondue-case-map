@@ -491,18 +491,7 @@ const MapSearch = ({
                 </p>
               </div>
             </div>
-
-            {/* Address */}
-            <div className="flex items-center space-x-3 
-              bg-gray-50 p-2 rounded-lg">
-              <MapPin className="w-5 h-5 text-red-500" />
-              <div>
-                <span className="text-xs text-gray-500">ที่อยู่</span>
-                <p className="font-semibold text-sm truncate">
-                  {selectedPlace.address || "Unknown"}
-                </p>
-              </div>
-            </div>
+          
           </div>
 
           {/* Comment Section */}

@@ -7,9 +7,19 @@ import {
   DirectionsRenderer,
   Circle,
 } from "@react-google-maps/api";
+import { 
+  MapPin, 
+  Tag, 
+  Navigation, 
+  Check, 
+  Building, 
+  MessageCircle, 
+  ExternalLink 
+} from "lucide-react";
 import NextImage from "next/image";
+import ReviewModal from "@/components/Map/ReviewModal";
 import { FaMapMarkerAlt, FaDirections, FaTag } from "react-icons/fa";
-
+import { HiCheckBadge } from "react-icons/hi2";
 const MapSearch = ({
   isLoaded,
   // userLocation,
@@ -22,12 +32,13 @@ const MapSearch = ({
 }) => {
   const mapRef = useRef(null);
   const [clickLocation, setClickLocation] = useState(null);
-  const [radius, setRadius] = useState(500);
+  const [radius, setRadius] = useState(5000);
   const [directions, setDirections] = useState(null);
   const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
   const [currentLegIndex, setCurrentLegIndex] = useState(0);
   const [userLocation, setUserLocation] = useState(null);
   const watcherIdRef = useRef(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [destinationReached, setDestinationReached] = useState(false);
   // ฟังก์ชันจัดการเมื่อคลิกบนแผนที่
@@ -110,7 +121,11 @@ const MapSearch = ({
   }, []);
 
   useEffect(() => {
-    if (selectedPlace) {
+      if (selectedPlace) {
+        if (!navigator.geolocation) {
+          console.error("Geolocation is not supported by this browser.");
+          return;
+        }
       watcherIdRef.current = navigator.geolocation.watchPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
@@ -136,6 +151,20 @@ const MapSearch = ({
         },
         (error) => {
           console.error("Error watching position:", error);
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              alert("Permission denied for location access.");
+              break;
+            case error.POSITION_UNAVAILABLE:
+              alert("Location unavailable.");
+              break;
+            case error.TIMEOUT:
+              alert("Location request timed out.");
+              break;
+            default:
+              alert("An unknown error occurred.");
+              break;
+          }
         },
         {
           enableHighAccuracy: true,
@@ -143,7 +172,7 @@ const MapSearch = ({
           timeout: 5000,
         }
       );
-
+  
       return () => {
         if (watcherIdRef.current) {
           navigator.geolocation.clearWatch(watcherIdRef.current);
@@ -166,24 +195,6 @@ const MapSearch = ({
       );
     }
   }, []);
-
-  // Display Turn-by-Turn Directions
-  const displayTurnByTurnInstructions = () => {
-    if (!directions) return null;
-
-    const steps = directions.routes[0]?.legs[0]?.steps || [];
-    return steps.map((step, index) => (
-      <div
-        key={index}
-        className={`p-2 border-b ${index === currentLegIndex ? "bg-yellow-100" : ""}`}
-      >
-        <div dangerouslySetInnerHTML={{ __html: step.instructions }} />
-        <p className="text-gray-500 text-sm">
-          {Math.round(step.distance.value / 1000)} km
-        </p>
-      </div>
-    ));
-  };
 
   // Automatically Update Current Step Index
   useEffect(() => {
@@ -224,6 +235,7 @@ const MapSearch = ({
     return null; // ถ้ายังโหลด Google Maps API ไม่เสร็จ จะไม่แสดงผลอะไรเลย
   }
 
+  
   const mapStyles = [
     {
       featureType: "all",
@@ -265,7 +277,7 @@ const MapSearch = ({
   return (
     <div className="relative h-screen">
       <GoogleMap
-        mapContainerStyle={{ width: "100%", height: "calc(100vh - 200px)" }}
+        mapContainerStyle={{ width: "100%",  height: "calc(100vh - 10rem)", }}
         center={mapCenter}
         zoom={14}
         options={{
@@ -282,6 +294,7 @@ const MapSearch = ({
           mapRef.current = map;
         }}
       >
+
         {/* วงกลมแสดงตำแหน่งปัจจุบันของผู้ใช้ */}
         {userLocation && (
           <>
@@ -345,7 +358,6 @@ const MapSearch = ({
               key={place.id}
               position={{ lat: Number(place.latitude), lng: Number(place.longitude) }}
               icon={{
-                // url: place.images[0]?.image_url || "/icons/location-pin.png",
                 url:"/icons/location-pin.png",
                 scaledSize: new window.google.maps.Size(30, 30),
               }}
@@ -378,13 +390,6 @@ const MapSearch = ({
                "/icons/location-pin.png",
                 scaledSize: new window.google.maps.Size(30, 30),
               }}
-              // icon={{
-              //   url:
-              //     place.images && place.images[0]?.image_url
-              //       ? place.images[0].image_url
-              //       : "/icons/location-pin.png",
-              //   scaledSize: new window.google.maps.Size(30, 30),
-              // }}
               animation={
                 hoveredMarkerId === place.id ? google.maps.Animation.BOUNCE : undefined
               }
@@ -411,73 +416,156 @@ const MapSearch = ({
             }}
           />
         )}
-
-        {selectedPlace && (
-          <InfoWindow
-            position={{
-              lat: Number(selectedPlace.latitude),
-              lng: Number(selectedPlace.longitude),
-            }}
-            onCloseClick={() => onSelectPlace(null)}
-          >
-            <div className="flex flex-col md:flex-row items-center max-w-md p-4 bg-white rounded-lg shadow-lg text-gray-800 space-y-4 md:space-y-0 md:space-x-4">
-              <NextImage
-                src={
-                  selectedPlace.images && selectedPlace.images[0]?.image_url
-                    ? selectedPlace.images[0].image_url
-                    : "/icons/location-pin.png"
-                }
-                alt={selectedPlace.ticket_id}
-                width={100}
-                height={100}
-                className="object-cover rounded-md shadow"
-              />
-
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center">
-                  <FaMapMarkerAlt className="mr-2 text-orange-500" />
-                  ticket_id:  {selectedPlace.ticket_id}
-                </h3>
-
-                <p className="text-sm text-orange-500 font-semibold flex items-center mb-2">
-                  <FaTag className="mr-2" />
-                  {selectedPlace.type}
+{selectedPlace && (
+  <InfoWindow
+    position={{
+      lat: Number(selectedPlace.latitude),
+      lng: Number(selectedPlace.longitude),
+    }}
+    onCloseClick={() => onSelectPlace(null)}
+    options={{
+      pixelOffset: new window.google.maps.Size(0, -40),
+      maxWidth: 400
+    }}
+  >
+    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden 
+        w-full max-w-xs sm:max-w-sm ">
+        {/* Gradient Header */}
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 
+          p-4 text-white flex items-center space-x-3">
+          <MapPin className="w-6 h-6" />
+          <h3 className="text-lg font-bold truncate">
+            {selectedPlace.ticket_id || "Unknown Location"}
+          </h3>
+        </div>
+      {/* Image Section */}
+      <div className="relative h-48 w-full overflow-hidden">
+      <NextImage
+        src={
+          selectedPlace.images && selectedPlace.images[0]?.image_url
+            ? selectedPlace.images[0].image_url
+            : "/icons/location-pin.png"
+        }
+        alt={selectedPlace.ticket_id || "Location Image"}
+        width={600}
+        height={400}
+        className="w-full h-48 object-cover rounded-lg shadow-md"
+      />
+       </div>
+   {/* Content Section */}
+   <div className="p-4 space-y-3">
+          {/* Details Grid */}
+          <div className="grid grid-cols-1 gap-2">
+            {/* Type */}
+            <div className="flex items-center space-x-3 
+              bg-gray-50 p-2 rounded-lg">
+              <Tag className="w-5 h-5 text-blue-500" />
+              <div>
+                <span className="text-xs text-gray-500">ประเภท</span>
+                <p className="font-semibold text-sm">
+                  {selectedPlace.type || "N/A"}
                 </p>
-                <p className="text-sm text-orange-500 font-semibold flex items-center mb-2">
-                  <FaTag className="mr-2" />
-                  {selectedPlace.organization}
-                </p>
-                <p className="text-sm text-orange-500 font-semibold flex items-center mb-2">
-                  <FaTag className="mr-2" />
-                  {selectedPlace.comment}
-                </p>
-                <p className="text-sm text-orange-500 font-semibold flex items-center mb-2">
-                  <FaTag className="mr-2" />
-                  {selectedPlace.address}
-                </p>
-                <div className="flex space-x-2 mt-4">
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${selectedPlace.latitude},${selectedPlace.longitude}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-blue-500 text-white px-2 py-1 md:px-3 md:py-2 rounded-lg hover:bg-blue-600 transition duration-300 flex items-center space-x-2"
-                  >
-                    <FaDirections className="inline-block" />
-                    <span>นำทาง</span>
-                  </a>
-
-                </div>
               </div>
             </div>
-          </InfoWindow>
-        )}
-      </GoogleMap>
 
-      {/* Turn-by-Turn Directions Display */}
-      <div className="absolute bottom-0 left-0 right-0 bg-white p-4 shadow-md max-h-48 overflow-y-auto">
-        {displayTurnByTurnInstructions()}
-      </div>
+            {/* Organization */}
+            <div className="flex items-center space-x-3 
+              bg-gray-50 p-2 rounded-lg">
+              <Building className="w-5 h-5 text-green-500" />
+              <div>
+                <span className="text-xs text-gray-500">หน่วยงาน</span>
+                <p className="font-semibold text-sm">
+                  {selectedPlace.organization || "N/A"}
+                </p>
+              </div>
+            </div>
+
+            {/* Action */}
+            <div className="flex items-center space-x-3 
+              bg-gray-50 p-2 rounded-lg">
+              <Navigation className="w-5 h-5 text-purple-500" />
+              <div>
+                <span className="text-xs text-gray-500">การดำเนินการ</span>
+                <p className="font-semibold text-sm">
+                  {selectedPlace.organization_action || "N/A"}
+                </p>
+              </div>
+            </div>
+
+            {/* Address */}
+            <div className="flex items-center space-x-3 
+              bg-gray-50 p-2 rounded-lg">
+              <MapPin className="w-5 h-5 text-red-500" />
+              <div>
+                <span className="text-xs text-gray-500">ที่อยู่</span>
+                <p className="font-semibold text-sm truncate">
+                  {selectedPlace.address || "Unknown"}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Comment Section */}
+          {selectedPlace.comment && (
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <div className="flex items-center space-x-2 mb-2">
+                <MessageCircle className="w-5 h-5 text-yellow-500" />
+                <span className="text-xs text-gray-500">หมายเหตุ</span>
+              </div>
+              <p className="text-sm text-gray-700 italic">
+                {selectedPlace.comment}
+              </p>
+            </div>
+          )}
+
+           {/* Action Buttons */}
+           <div className="grid grid-cols-2 gap-3 mt-4">
+            {/* Directions Button */}
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&origin=${userLocation?.lat},${userLocation?.lng}&destination=${selectedPlace.latitude},${selectedPlace.longitude}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center 
+                bg-gradient-to-r from-orange-500 to-red-500 
+                text-white px-4 py-2 rounded-lg 
+                hover:from-orange-600 hover:to-red-600 
+                transition-all duration-300 
+                space-x-2"
+            >
+              <Navigation className="w-5 h-5" />
+              <span className="text-sm font-semibold">นำทาง</span>
+            </a>
+
+            {/* Check Location Button */}
+            <button
+             onClick={() => setIsModalOpen(true)} 
+              className="flex items-center justify-center 
+                bg-gradient-to-r from-blue-500 to-indigo-500 
+                text-white px-4 py-2 rounded-lg 
+                hover:from-blue-600 hover:to-indigo-600 
+                transition-all duration-300 
+                space-x-2"
+            >
+              <Check className="w-5 h-5" />
+              <span className="text-sm font-semibold">ตรวจสอบ</span>
+            </button>
+          </div>
+ 
     </div>
+    </div>
+  </InfoWindow>
+)}
+      </GoogleMap>
+      {selectedPlace && (
+      <ReviewModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        place={selectedPlace}
+        userLocation={userLocation}
+      />
+    )}
+    </div>
+  
   );
 };
 

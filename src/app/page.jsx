@@ -18,7 +18,7 @@ const MapComponent = dynamic(() => import("@/components/Map/Map"), {
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
-const GeocodingSearchPage = () => {
+const Home = () => {
   const [userLocation, setUserLocation] = useState(null);
   const [nearbyPlaces, setNearbyPlaces] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
@@ -124,9 +124,9 @@ const GeocodingSearchPage = () => {
       }
     );
   };
-
+  
   return (
-    <div className="container mx-auto p-4 relative">
+      <div className="container  relativez mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="text-center mb-6">
         <h1 className="text-2xl font-bold text-orange-600">ตรวจสอบตำแหน่งงานที่แก้ไข</h1>
@@ -137,21 +137,22 @@ const GeocodingSearchPage = () => {
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
-        <button
-          onClick={handleCurrentLocationClick}
-          className="bg-orange-500 text-white w-full sm:w-auto py-3 px-6 rounded-lg shadow hover:bg-orange-600 transition duration-300"
-        >
-          <FaMapMarkerAlt className="inline-block mr-2" />
-          ตำแหน่งของฉัน
-        </button>
+      <button
+  onClick={handleCurrentLocationClick}
+  className="bg-orange-500 text-white w-full sm:w-auto py-3 px-6 rounded-lg shadow-md hover:bg-orange-600 active:scale-95 transition-transform duration-150"
+>
+  <FaMapMarkerAlt className="inline-block mr-2" />
+  ตำแหน่งของฉัน
+</button>
+
       </div>
 
       {/* Loading Spinner */}
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
           <Circles
-            height="80"
-            width="80"
+            height="60"
+            width="60"
             color="#FF7043"
             ariaLabel="loading-indicator"
           />
@@ -173,8 +174,10 @@ const GeocodingSearchPage = () => {
           />
         )}
       </div>
+   
     </div>
+
   );
 };
 
-export default GeocodingSearchPage;
+export default Home;

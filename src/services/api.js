@@ -5,7 +5,7 @@ const api = axios.create({
 })
 
 // Function to fetch places nearby by coordinates
-export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius = 500) => {
+export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius = 5000) => {
   try {
     const response = await api.get(`/places/nearby-by-coordinates`, {
       params: { lat: latitude, lng: longitude, radius },
@@ -18,17 +18,14 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
       ticket_id: place.ticket_id,
       type: place.type,
       organization: place.organization,
+      organization_action: place.organization_action,
       comment: place.comment,
       coords: place.coords,
       latitude: parseFloat(place.coords.split(",")[1]), // Ensure proper lat parsing
       longitude: parseFloat(place.coords.split(",")[0]), // Ensure proper lng parsing
       address: place.address || "No address provided",
-      // photo: place.photo || "/default-photo.png", // Fallback image
-      // photo_after: place.photo_after || null,
-      // photo: place.photo?.photo_url || "/default-photo.png", // Fallback image
-      // photo_after: place.photo_after?.photo_url || null,
       images: [
-        { image_url: place.photo || "/default-photo.png" },
+        { image_url: place.photo_after || "/icons/location-pin.png" },
         ...(place.photo_after ? [{ image_url: place.photo_after }] : []),
       ],
       star: place.star || 0,
@@ -37,6 +34,26 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
   } catch (error) {
     console.error("Error fetching places nearby by coordinates:", error);
     throw new Error(error.response?.data?.error || "Error fetching places nearby by coordinates");
+  }
+};
+
+// ฟังก์ชัน POST เพื่อบันทึกข้อมูลรีวิว
+export const saveReview = async (placeId, reviewerName, reviewStatus, stars, comment) => {
+  try {
+    const timestamp = new Date().toISOString(); // Current timestamp
+    const response = await api.post(`/save-review`, {
+      placeId,
+      reviewerName,
+      reviewStatus,
+      stars,
+      comment, // Ensure comment is included
+      timestamp,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Error saving review:", error);
+    throw new Error(error.response?.data?.error || "Error saving review");
   }
 };
 

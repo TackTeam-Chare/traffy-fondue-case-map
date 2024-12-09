@@ -1,17 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
-import {
-  CheckCircle2,
-  XCircle,
-  Star,
-  User,
-  ClipboardCheck,
-  Loader2,
-  CheckCircle,
-  MessageCircle
+import { 
+  CheckCircle2, 
+  XCircle, 
+  Star, 
+  ClipboardCheck, 
+  Loader2, 
+  CheckCircle, 
+  MessageCircle 
 } from "lucide-react";
 import { saveReview } from "@/services/api";
 import { Toaster, toast } from "react-hot-toast";
+import liff from "@line/liff";
 
 if (typeof window !== "undefined") {
   Modal.setAppElement("body");
@@ -63,11 +63,33 @@ const StarRating = ({ stars, setStars }) => (
 );
 
 const ReviewModal = ({ isOpen, onClose, place }) => {
-  const [reviewerName, setReviewerName] = useState("");
   const [reviewStatus, setReviewStatus] = useState("pass");
   const [stars, setStars] = useState(0);
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
+  const [userProfile, setUserProfile] = useState(null);
+
+  // Handle LINE Login and fetch profile
+  // Handle LINE Login and fetch profile
+  const handleLogin = async () => {
+    try {
+      await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID });
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      } else {
+        const profile = await liff.getProfile();
+        setUserProfile(profile);
+      }
+    } catch (error) {
+      console.error("LINE Login Error:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      handleLogin();
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -76,8 +98,19 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
       if (!place || !place.id) {
         throw new Error("Invalid place ID");
       }
+      if (!userProfile) {
+        throw new Error("User profile is not available");
+      }
 
-      await saveReview(place.id, reviewerName, reviewStatus, stars, comment);
+      await saveReview(
+        place.id,
+        userProfile.userId,
+        userProfile.displayName,
+        reviewStatus,
+        stars,
+        comment
+      );
+
 
       toast.success("บันทึกข้อคิดเห็นของท่านสำเร็จ", {
         duration: 4000,
@@ -120,75 +153,69 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
               ตรวจสอบสถานที่
             </h2>
             <p className="text-sm mt-1">{place?.ticket_id || "Unknown Location"}</p>
+            {userProfile && (
+              <div className="flex items-center space-x-3 mt-3">
+                <img
+                  src={userProfile.pictureUrl}
+                  alt={userProfile.displayName}
+                  className="w-10 h-10 rounded-full shadow-lg"
+                />
+                <span className="text-sm font-semibold">
+                  {userProfile.displayName}
+                </span>
+              </div>
+            )}
           </div>
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            <div className="relative">
-              <User className="absolute left-3 top-3 text-orange-500 w-5 h-5" />
-              <input
-                type="text"
-                placeholder="ชื่อผู้ตรวจ"
-                value={reviewerName}
-                onChange={(e) => setReviewerName(e.target.value)}
-                required
-                className="w-full pl-10 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-              />
-            </div>
-
-            {/* Status Section */}
             <div>
               <label className="block text-sm mb-2 text-gray-600">เกณฑ์</label>
               <StatusToggle status={reviewStatus} onStatusChange={setReviewStatus} />
             </div>
 
-            {/* Star Rating Section */}
             <div>
               <label className="block text-sm mb-2 text-gray-600">ให้ดาว</label>
               <StarRating stars={stars} setStars={setStars} />
             </div>
 
-        {/* Comment Section */}
-<div className="relative">
-  <label className="block text-sm mb-2 text-gray-600 flex items-center space-x-2">
-    <MessageCircle className="w-5 h-5 text-orange-500" /> {/* Added Comment Icon */}
-    <span>ความคิดเห็น</span>
-  </label>
-  <textarea
-    value={comment}
-    onChange={(e) => setComment(e.target.value)}
-    rows={3}
-    required
-    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 resize-none"
-    placeholder="กรอกความคิดเห็น..."
-  ></textarea>
-</div>
+            <div className="relative">
+              <label className="block text-sm mb-2 text-gray-600 flex items-center space-x-2">
+                <MessageCircle className="w-5 h-5 text-orange-500" />
+                <span>ความคิดเห็น</span>
+              </label>
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                rows={3}
+                required
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 resize-none"
+                placeholder="กรอกความคิดเห็น..."
+              ></textarea>
+            </div>
 
-
-        {/* Action Buttons */}
-<div className="grid grid-cols-2 gap-4">
-  <button
-    type="submit"
-    disabled={loading}
-    className="flex items-center justify-center bg-orange-500 text-white rounded-lg py-3 hover:bg-orange-600"
-  >
-    {loading ? (
-      <Loader2 className="animate-spin mr-2 w-5 h-5" />
-    ) : (
-      <>
-        <CheckCircle className="mr-2 w-5 h-5" />
-        บันทึก
-      </>
-    )}
-  </button>
-  <button
-    type="button"
-    onClick={onClose}
-    className="flex items-center justify-center bg-gray-200 text-gray-600 rounded-lg py-3 hover:bg-gray-300"
-  >
-    <XCircle className="mr-2 w-5 h-5" /> 
-    ยกเลิก
-  </button>
-</div>
-
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex items-center justify-center bg-orange-500 text-white rounded-lg py-3 hover:bg-orange-600"
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin mr-2 w-5 h-5" />
+                ) : (
+                  <>
+                    <CheckCircle className="mr-2 w-5 h-5" />
+                    บันทึก
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex items-center justify-center bg-gray-200 text-gray-600 rounded-lg py-3 hover:bg-gray-300"
+              >
+                <XCircle className="mr-2 w-5 h-5" />
+                ยกเลิก
+              </button>
+            </div>
           </form>
         </div>
       </Modal>

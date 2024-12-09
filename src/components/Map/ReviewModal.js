@@ -70,10 +70,11 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
   const [userProfile, setUserProfile] = useState(null);
 
   // Handle LINE Login and fetch profile
-  // Handle LINE Login and fetch profile
   const handleLogin = async () => {
     try {
-      await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID });
+      // await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID });
+      await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID, debugMode: true });
+
       if (!liff.isLoggedIn()) {
         liff.login();
       } else {

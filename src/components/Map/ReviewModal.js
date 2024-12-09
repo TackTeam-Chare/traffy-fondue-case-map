@@ -95,6 +95,14 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    console.log({
+      placeId: place.id,
+      userId: userProfile?.userId,
+      displayName: userProfile?.displayName,
+      reviewStatus,
+      stars,
+      comment,
+    });
     try {
       if (!place || !place.id) {
         throw new Error("Invalid place ID");
@@ -105,8 +113,8 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
 
       await saveReview(
         place.id,
-        userProfile.userId,
-        userProfile.displayName,
+        userProfile?.userId,
+        userProfile?.displayName,
         reviewStatus,
         stars,
         comment

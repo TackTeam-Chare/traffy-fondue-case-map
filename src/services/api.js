@@ -47,32 +47,34 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
 
 export const saveReview = async (placeId, userId, displayName, reviewStatus, stars, comment) => {
   try {
-    // Current timestamp
     const timestamp = new Date().toISOString();
 
-    // Make the API request
-    const response = await api.post(`/save-review`, {
-      placeId,       // Place ID being reviewed
-      userId,        // User ID from LINE profile
-      displayName,   // User's display name
-      reviewStatus,  // Review status ("pass" or "fail")
-      stars,         // Star rating (1 to 5)
-      comment,       // User comment
-      timestamp,     // Timestamp of the review
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/save-review`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        placeId,
+        userId,
+        displayName,
+        reviewStatus,
+        stars,
+        comment,
+        timestamp,
+      }),
     });
 
-    // Return the response data
-    return response.data;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to save review");
+    }
 
+    return await response.json();
   } catch (error) {
-    // Log the error for debugging
     console.error("Error saving review:", error);
-
-    // Extract error message from response or use a default
-    const errorMessage = error.response?.data?.error || "Failed to save review";
-
-    // Throw an error with the message for further handling
-    throw new Error(errorMessage);
+    throw error;
   }
 };
+
 

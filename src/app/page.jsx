@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { getUserProfile } from "@/utils/auth";
-import liff from "@line/liff";
+
 import {
   FaMapMarkerAlt,
 } from "react-icons/fa";
@@ -35,22 +35,6 @@ const Home = () => {
     googleMapsApiKey: GOOGLE_MAPS_API_KEY
   });
 
-    // Check if the user is logged in
-    // const checkLoginStatus = async () => {
-    //   try {
-    //     await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID });
-    //     if (liff.isLoggedIn()) {
-    //       const profile = await liff.getProfile();
-    //       console.log("User is logged in:", profile);
-    //       setIsLoggedIn(true);
-    //     } else {
-    //       console.log("User is not logged in. Redirecting to login...");
-    //       liff.login();
-    //     }
-    //   } catch (error) {
-    //     console.error("Error checking login status:", error);
-    //   }
-    // };
   useEffect(() => {
     if (typeof window !== "undefined") {
       const fetchProfile = async () => {
@@ -68,12 +52,6 @@ const Home = () => {
   useEffect(() => {
     setIsClient(true); // ตั้งค่าว่าเป็น client-side (เบราว์เซอร์) โดยอัปเดต state
   }, []);
-
-  // useEffect(() => {
-  //   if (isClient) {
-  //     checkLoginStatus(); // Verify login when the page loads
-  //   }
-  // }, [isClient]);
 
   useEffect(() => {
     // ตรวจสอบว่ากำลังรันบน client-side (เบราว์เซอร์) หรือไม่
@@ -169,7 +147,7 @@ const Home = () => {
   if (!userProfile) {
     return (
       <div className="h-screen flex items-center justify-center">
-        <Circles height="60" width="60" color="#FF7043" ariaLabel="loading-indicator" />
+        <Circles height="60" width="60" color="#15803d" ariaLabel="loading-indicator" />
         <p className="ml-4 text-gray-600">กำลังตรวจสอบสถานะการล็อกอิน</p>
       </div>
     );
@@ -178,10 +156,10 @@ const Home = () => {
   return (
       <div className="container  relativez mx-auto px-4 sm:px-6 lg:px-8">
       {/* Header */}
-      <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-orange-600">ตรวจสอบตำแหน่งงานที่แก้ไข</h1>
+      <div className="text-center m-5">
+        <h1 className="text-2xl font-bold text-green-600">ตรวจสอบตำแหน่งงานที่แก้ไข</h1>
         <p className="text-gray-500 text-sm">
-          ตรวจสอบตำแหน่งปัจจุบันและดูข้อมูลจุดที่แก้ไขปัญหาใกล้คุณ
+       ดูข้อมูลจุดที่แก้ไขปัญหาใกล้คุณ
         </p>
       </div>
 
@@ -189,7 +167,7 @@ const Home = () => {
       <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
       <button
   onClick={handleCurrentLocationClick}
-  className="bg-orange-500 text-white w-full sm:w-auto py-3 px-6 rounded-lg shadow-md hover:bg-orange-600 active:scale-95 transition-transform duration-150"
+  className="bg-green-600 text-white w-full sm:w-auto py-3 px-6 rounded-lg shadow-md hover:bg-green-700 active:scale-95 transition-transform duration-150"
 >
   <FaMapMarkerAlt className="inline-block mr-2" />
   ตำแหน่งของฉัน
@@ -203,7 +181,7 @@ const Home = () => {
           <Circles
             height="60"
             width="60"
-            color="#FF7043"
+            color="#15803d"
             ariaLabel="loading-indicator"
           />
         </div>

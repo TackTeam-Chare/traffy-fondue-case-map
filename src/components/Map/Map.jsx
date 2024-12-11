@@ -1,5 +1,6 @@
 "use client";
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useEffect, useState, useCallback,Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
 import {
   GoogleMap,
   Marker,
@@ -15,6 +16,7 @@ import {
   Building, 
   MessageCircle, 
   Star,
+  ClipboardCheck ,
   XCircle
 } from "lucide-react";
 import NextImage from "next/image";
@@ -38,7 +40,20 @@ const MapSearch = ({
   const [currentLegIndex, setCurrentLegIndex] = useState(0);
   const [userLocation, setUserLocation] = useState(null);
   const watcherIdRef = useRef(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // For ReviewModal
+  const [isDialogOpen, setIsDialogOpen] = useState(true); // For Dialog modal
+
+  // Handle opening the ReviewModal and closing the main Dialog
+  const handleReviewButtonClick = () => {
+    setIsDialogOpen(false); // Close the Dialog
+    setIsModalOpen(true); // Open the ReviewModal
+  };
+
+  // Handle marker clicks
+  const handleMarkerClick = (place) => {
+    onSelectPlace(place); // Set the selected place directly
+    setIsDialogOpen(true); // Ensure the Dialog opens when a place is selected
+  };
 
   const [destinationReached, setDestinationReached] = useState(false);
   // ฟังก์ชันจัดการเมื่อคลิกบนแผนที่
@@ -271,45 +286,6 @@ useEffect(() => {
     return null; // ถ้ายังโหลด Google Maps API ไม่เสร็จ จะไม่แสดงผลอะไรเลย
   }
 
-  
-  const mapStyles = [
-    {
-      featureType: "all",
-      elementType: "geometry.fill",
-      stylers: [{ color: "#fef3e2" }],
-    },
-    {
-      featureType: "water",
-      elementType: "geometry",
-      stylers: [{ color: "#b3d9ff" }],
-    },
-    {
-      featureType: "road",
-      elementType: "geometry.stroke",
-      stylers: [{ color: "#ffa726" }, { lightness: 40 }],
-    },
-    {
-      featureType: "road",
-      elementType: "geometry.fill",
-      stylers: [{ color: "#ffcc80" }],
-    },
-    {
-      featureType: "poi",
-      elementType: "geometry.fill",
-      stylers: [{ color: "#ffebcc" }],
-    },
-    {
-      featureType: "landscape",
-      elementType: "geometry.fill",
-      stylers: [{ color: "#fff5e6" }],
-    },
-    {
-      featureType: "administrative",
-      elementType: "geometry.stroke",
-      stylers: [{ color: "#f9a825" }, { lightness: 50 }],
-    },
-  ];
-
   return (
     <div className="relative h-screen">
       <GoogleMap
@@ -317,7 +293,7 @@ useEffect(() => {
         center={mapCenter}
         zoom={14}
         options={{
-          styles: mapStyles,
+          // styles: mapStyles,
           zoomControl: true,
           mapTypeControl: false,
           fullscreenControl: false,
@@ -346,9 +322,9 @@ useEffect(() => {
               center={userLocation}
               radius={radius}
               options={{
-                fillColor: "#FF7043",
+                fillColor: "#15803d",
                 fillOpacity: 0.2,
-                strokeColor: "#FF7043",
+                strokeColor: "#15803d",
                 strokeOpacity: 0.5,
                 strokeWeight: 2,
               }}
@@ -370,9 +346,9 @@ useEffect(() => {
               center={clickLocation}
               radius={radius}
               options={{
-                fillColor: "#FF8A65",
+                fillColor: "#84cc16",
                 fillOpacity: 0.1,
-                strokeColor: "#FF7043",
+                strokeColor: "#84cc16",
                 strokeOpacity: 0.3,
                 strokeWeight: 2,
               }}
@@ -401,7 +377,8 @@ useEffect(() => {
               onMouseOver={() => setHoveredMarkerId(place.id)}
               onMouseOut={() => setHoveredMarkerId(null)}
               onClick={() => {
-                onSelectPlace(place);
+                handleMarkerClick(place);
+                // onSelectPlace(place);
                 calculateRoutes(userLocation, place);
               }}
             />
@@ -444,200 +421,165 @@ useEffect(() => {
             directions={directions}
             options={{
               polylineOptions: {
-                strokeColor: "#FF7043",
+                strokeColor: "#166534",
                 strokeOpacity: 0.8,
                 strokeWeight: 6,
               },
-              suppressMarkers: true, // ปิดการแสดง markers บนเส้นทาง
+              suppressMarkers: true,
             }}
           />
         )}
-{selectedPlace && (
-  <InfoWindow
-    position={{
-      lat: Number(selectedPlace.latitude),
-      lng: Number(selectedPlace.longitude),
-    }}
-    onCloseClick={() => onSelectPlace(null)}
-    options={{
-      pixelOffset: new window.google.maps.Size(0, -40),
-      maxWidth: 500 
-    }}
-  >
-    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden 
-        w-full max-w-xs sm:max-w-sm ">
-        {/* Gradient Header */}
-        <div className="bg-gradient-to-r from-orange-500 to-red-500 
-          p-4 text-white flex items-center space-x-3">
-          <MapPin className="w-6 h-6" />
-          <h3 className="text-lg font-bold truncate">
-            {selectedPlace.ticket_id || "Unknown Location"}
-          </h3>
-        </div>
-      {/* Image Section */}
-      <div className="relative h-48 w-full overflow-hidden">
-      <NextImage
-        src={
-          selectedPlace.images && selectedPlace.images[0]?.image_url
-            ? selectedPlace.images[0].image_url
-            : "/icons/location-pin.png"
-        }
-        alt={selectedPlace.ticket_id || "Location Image"}
-        width={600}
-        height={400}
-        className="w-full h-48 object-cover rounded-lg shadow-md"
-      />
-       </div>
-   {/* Content Section */}
-   <div className="p-4 space-y-3">
-          {/* Details Grid */}
-          <div className="grid grid-cols-1 gap-2">
-            {/* Type */}
-            <div className="flex items-center space-x-3 
-              bg-gray-50 p-2 rounded-lg">
-              <Tag className="w-5 h-5 text-blue-500" />
-              <div>
-                <span className="text-xs text-gray-500">ประเภท</span>
-                <p className="font-semibold text-sm">
-                  {selectedPlace.type || "N/A"}
-                </p>
-              </div>
-            </div>
-
-            {/* Organization */}
-            <div className="flex items-center space-x-3 
-              bg-gray-50 p-2 rounded-lg">
-              <Building className="w-5 h-5 text-green-500" />
-              <div>
-                <span className="text-xs text-gray-500">หน่วยงาน</span>
-                <p className="font-semibold text-sm">
-                  {selectedPlace.organization || "N/A"}
-                </p>
-              </div>
-            </div>
-
-            {/* Action */}
-            <div className="flex items-center space-x-3 
-              bg-gray-50 p-2 rounded-lg">
-              <Navigation className="w-5 h-5 text-purple-500" />
-              <div>
-                <span className="text-xs text-gray-500">การดำเนินการ</span>
-                <p className="font-semibold text-sm">
-                  {selectedPlace.organization_action || "N/A"}
-                </p>
-              </div>
-            </div>
-          
-          </div>
-
-          {/* Comment Section */}
-          {selectedPlace.comment && (
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <div className="flex items-center space-x-2 mb-2">
-                <MessageCircle className="w-5 h-5 text-yellow-500" />
-                <span className="text-xs text-gray-500">หมายเหตุ</span>
-              </div>
-              <p className="text-sm text-gray-700 italic">
-                {selectedPlace.comment}
-              </p>
-            </div>
-          )}
-          
-          {selectedPlace.reviewSummary && (
-  <div className="bg-white p-4 rounded-lg shadow-md border border-gray-200 space-y-3">
-    {/* Header Section */}
-    <div className="text-center">
-      <h4 className="text-base font-bold text-gray-800">
-        สรุปผลโหวต
-      </h4>
-    </div>
-
-
-
-    {/* Votes Breakdown */}
-    <div className="grid grid-cols-2 gap-3">
-      {/* Pass Votes */}
-      <div className="flex flex-col items-center bg-green-50 p-2 rounded-md border border-green-100">
-        <Check className="w-6 h-6 text-green-500" />
-        <p className="text-sm font-medium text-green-600 mt-1">
-          ผ่าน: {selectedPlace.reviewSummary.passCount || 0}
-        </p>
-      </div>
-
-      {/* Fail Votes */}
-      <div className="flex flex-col items-center bg-red-50 p-2 rounded-md border border-red-100">
-        <XCircle className="w-6 h-6 text-red-500" />
-        <p className="text-sm font-medium text-red-600 mt-1">
-          ไม่ผ่าน: {selectedPlace.reviewSummary.failCount || 0}
-        </p>
-      </div>
-    </div>
-
-  {/* Average Stars */}
-<div className="flex items-center justify-center bg-yellow-50 p-2 rounded-md border border-yellow-100">
-  <Star className="w-6 h-6 text-yellow-500" />
-  <p className="text-sm font-medium text-yellow-600 ml-2">
-    คะแนนเฉลี่ย:{" "}
-    <span className="text-yellow-700 font-bold">
-      {selectedPlace.reviewSummary?.averageStars != null &&
-      typeof selectedPlace.reviewSummary.averageStars === "number"
-        ? selectedPlace.reviewSummary.averageStars.toFixed(1)
-        : "N/A"}
-    </span>
-  </p>
-</div>
-
-  </div>
-)}
-
-
-
-
-           {/* Action Buttons */}
-           <div className="grid grid-cols-2 gap-3 mt-4">
-            {/* Directions Button */}
-            <a
-              href={`https://www.google.com/maps/dir/?api=1&origin=${userLocation?.lat},${userLocation?.lng}&destination=${selectedPlace.latitude},${selectedPlace.longitude}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center 
-                bg-gradient-to-r from-orange-500 to-red-500 
-                text-white px-4 py-2 rounded-lg 
-                hover:from-orange-600 hover:to-red-600 
-                transition-all duration-300 
-                space-x-2"
-            >
-              <Navigation className="w-5 h-5" />
-              <span className="text-sm font-semibold">นำทาง</span>
-            </a>
-
-            {/* Check Location Button */}
-            <button
-             onClick={() => setIsModalOpen(true)} 
-              className="flex items-center justify-center 
-                bg-gradient-to-r from-blue-500 to-indigo-500 
-                text-white px-4 py-2 rounded-lg 
-                hover:from-blue-600 hover:to-indigo-600 
-                transition-all duration-300 
-                space-x-2"
-            >
-              <Check className="w-5 h-5" />
-              <span className="text-sm font-semibold">ตรวจสอบ</span>
-            </button>
-          </div>
- 
-    </div>
-    </div>
-  </InfoWindow>
-)}
       </GoogleMap>
+   {/* Dialog Modal for Selected Place */}
+   {selectedPlace && isDialogOpen && (
+      <Transition as={Fragment} show={true}>
+        <Dialog as="div" className="relative z-50" onClose={() => onSelectPlace(null)}>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-emerald-900 bg-opacity-40" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 scale-95"
+                enterTo="opacity-100 scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 scale-100"
+                leaveTo="opacity-0 scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-lg transform rounded-2xl bg-white p-6 shadow-2xl transition-all">
+                  {/* Modal Header */}
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center space-x-3">
+                      <MapPin className="w-6 h-6 text-emerald-600" />
+                      <h3 className="text-xl font-bold text-emerald-800">
+                        {selectedPlace?.ticket_id || "สถานที่ไม่ระบุ"}
+                      </h3>
+                    </div>
+                    <button
+                      onClick={() => onSelectPlace(null)}
+                      className="text-emerald-500 hover:text-emerald-700 transition-colors"
+                    >
+                      <XCircle className="w-6 h-6" />
+                    </button>
+                  </div>
+
+                  {/* Image Section */}
+                  <div className="mb-6 overflow-hidden rounded-xl border-4 border-emerald-100">
+                    <NextImage
+                      src={selectedPlace?.images?.[0]?.image_url || "/icons/location-pin.png"}
+                      alt="สถานที่"
+                      width={600}
+                      height={300}
+                      className="w-full object-cover transition-transform duration-300 hover:scale-105"
+                    />
+                  </div>
+
+                  {/* Details Section */}
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="flex items-center space-x-3 bg-emerald-50 p-3 rounded-lg">
+                        <Tag className="w-5 h-5 text-emerald-500" />
+                        <span className="text-emerald-800">ประเภท: {selectedPlace?.type || "ไม่ระบุ"}</span>
+                      </div>
+                      <div className="flex items-center space-x-3 bg-emerald-50 p-3 rounded-lg">
+                        <Building className="w-5 h-5 text-emerald-600" />
+                        <span className="text-emerald-800">หน่วยงาน: {selectedPlace?.organization || "ไม่ระบุ"}</span>
+                      </div>
+                      <div className="flex items-center space-x-3 bg-emerald-50 p-3 rounded-lg">
+                        <MessageCircle className="w-5 h-5 text-emerald-500" />
+                        <span className="text-emerald-800">หมายเหตุ: {selectedPlace?.comment || "ไม่มีหมายเหตุ"}</span>
+                      </div>
+                    </div>
+
+                    {/* Review Summary with Enhanced Green Theme */}
+                    {selectedPlace?.reviewSummary && (
+                      <div className="bg-emerald-50 p-5 rounded-xl border border-emerald-200 space-y-4">
+                        <div className="text-center">
+                          <h4 className="text-lg font-bold text-emerald-800">สรุปผลโหวต</h4>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="flex flex-col items-center bg-green-100 p-3 rounded-lg">
+                            <Check className="w-7 h-7 text-green-600 mb-2" />
+                            <p className="text-green-800 font-semibold">
+                              ผ่าน: {selectedPlace.reviewSummary.passCount || 0}
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-center bg-red-100 p-3 rounded-lg">
+                            <XCircle className="w-7 h-7 text-red-600 mb-2" />
+                            <p className="text-red-800 font-semibold">
+                              ไม่ผ่าน: {selectedPlace.reviewSummary.failCount || 0}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-center bg-yellow-100 p-3 rounded-lg">
+                          <Star className="w-6 h-6 text-yellow-500 mr-2" />
+                          <p className="text-emerald-900 font-bold">
+                            คะแนนเฉลี่ย:{" "}
+                            <span className="text-emerald-700">
+                              {selectedPlace.reviewSummary.averageStars?.toFixed(1) || "N/A"}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="mt-6 flex justify-end space-x-3">
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&origin=${userLocation?.lat},${userLocation?.lng}&destination=${selectedPlace?.latitude},${selectedPlace?.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 flex items-center space-x-2 transition-colors"
+                    >
+                      <Navigation className="w-5 h-5" />
+                      <span>นำทาง</span>
+                    </a>
+                    <button
+                      onClick={handleReviewButtonClick}
+                      className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center space-x-2 transition-colors"
+                    >
+                      <ClipboardCheck className="w-5 h-5" />
+                      <span>ตรวจสอบ</span>
+                      </button>
+                    <button
+                      onClick={() => onSelectPlace(null)}
+                      className="bg-gray-200 text-emerald-800 px-4 py-2 rounded-lg hover:bg-gray-300 flex items-center space-x-2 transition-colors"
+                    >
+                      <XCircle className="w-5 h-5" />
+                      <span>ปิด</span>
+                    </button>
+                  </div>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+    )}
       {selectedPlace && (
       <ReviewModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        place={selectedPlace}
+      isOpen={isModalOpen}
+      onClose={() => {
+        setIsModalOpen(false);
+        setIsDialogOpen(true); // Reopen the Dialog after closing the ReviewModal
+      }}
+      place={selectedPlace}
         userLocation={userLocation}
+        
       />
+   
     )}
     </div>
   

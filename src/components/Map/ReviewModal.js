@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
-import { 
-  CheckCircle2, 
-  XCircle, 
-  Star, 
-  ClipboardCheck, 
-  Loader2, 
-  CheckCircle, 
-  MessageCircle 
+import {
+  CheckCircle2,
+  XCircle,
+  Star,
+  ClipboardCheck,
+  Loader2,
+  CheckCircle,
+  MessageCircle,
 } from "lucide-react";
 import { saveReview } from "@/services/api";
 import { Toaster, toast } from "react-hot-toast";
@@ -25,8 +25,8 @@ const StatusToggle = ({ status, onStatusChange }) => (
       className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-lg text-sm transition-all duration-300 
         ${
           status === "pass"
-            ? "bg-green-500 text-white shadow-md"
-            : "bg-green-50 text-green-600 border border-green-300 hover:bg-green-100"
+            ? "bg-emerald-600 text-white shadow-md"
+            : "bg-emerald-100 text-emerald-600 border border-emerald-300 hover:bg-emerald-200"
         }`}
     >
       <CheckCircle2 className="w-5 h-5" />
@@ -38,8 +38,8 @@ const StatusToggle = ({ status, onStatusChange }) => (
       className={`flex items-center justify-center space-x-2 px-4 py-2 rounded-lg text-sm transition-all duration-300 
         ${
           status === "fail"
-            ? "bg-red-500 text-white shadow-md"
-            : "bg-red-50 text-red-600 border border-red-300 hover:bg-red-100"
+            ? "bg-red-600 text-white shadow-md"
+            : "bg-red-100 text-red-600 border border-red-300 hover:bg-red-200"
         }`}
     >
       <XCircle className="w-5 h-5" />
@@ -54,8 +54,8 @@ const StarRating = ({ stars, setStars }) => (
       <Star
         key={starValue}
         className={`cursor-pointer w-6 h-6 sm:w-8 sm:h-8 ${
-          starValue <= stars ? "text-yellow-400" : "text-gray-300"
-        } transition-colors duration-200 hover:text-yellow-500`}
+          starValue <= stars ? "text-green-700" : "text-gray-300"
+        } transition-colors duration-200 hover:text-green-500`}
         onClick={() => setStars(starValue)}
       />
     ))}
@@ -63,76 +63,57 @@ const StarRating = ({ stars, setStars }) => (
 );
 
 const ReviewModal = ({ isOpen, onClose, place }) => {
-  const [reviewStatus, setReviewStatus] = useState(null); 
+  const [reviewStatus, setReviewStatus] = useState(null);
   const [stars, setStars] = useState(0);
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [userProfile, setUserProfile] = useState(null);
 
+  useEffect(() => {
+    if (place) {
+      setReviewStatus(null);
+      setStars(0);
+      setComment("");
+    }
+  }, [place]);
 
-    // รีเซ็ตค่าทั้งหมดเมื่อ `place` เปลี่ยน
-    useEffect(() => {
-      if (place) {
-        setReviewStatus(null);
-        setStars(0);
-        setComment("");
-      }
-    }, [place]);
-    
-    // Fetch profile from localStorage or re-login using LIFF
-    const fetchUserProfile = async () => {
-      const storedProfile = localStorage.getItem("userProfile");
-      if (storedProfile) {
-        setUserProfile(JSON.parse(storedProfile)); // Use existing profile
-      } else {
-        try {
-          await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID });
-          if (!liff.isLoggedIn()) {
-            liff.login();
-          } else {
-            const profile = await liff.getProfile();
-            setUserProfile(profile);
-            localStorage.setItem("userProfile", JSON.stringify(profile)); // Save profile for later use
-          }
-        } catch (error) {
-          console.error("LINE Login Error:", error);
+  const fetchUserProfile = async () => {
+    const storedProfile = localStorage.getItem("userProfile");
+    if (storedProfile) {
+      setUserProfile(JSON.parse(storedProfile));
+    } else {
+      try {
+        await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+        } else {
+          const profile = await liff.getProfile();
+          setUserProfile(profile);
+          localStorage.setItem("userProfile", JSON.stringify(profile));
         }
+      } catch (error) {
+        console.error("LINE Login Error:", error);
       }
-    };
-  
-    useEffect(() => {
-      if (isOpen) {
-        fetchUserProfile();
-      }
-    }, [isOpen]);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchUserProfile();
+    }
+  }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-      // Input validation
-  if (!reviewStatus) {
-    toast.error("กรุณาเลือกเกณฑ์ (ผ่าน/ไม่ผ่าน)", {
-      style: { background: "#DC2626", color: "white" },
-    });
-    setLoading(false);
-    return;
-  }
-    console.log({
-      placeId: place.id,
-      userId: userProfile?.userId,
-      displayName: userProfile?.displayName,
-      reviewStatus,
-      stars,
-      comment,
-    });
+    if (!reviewStatus) {
+      toast.error("กรุณาเลือกเกณฑ์ (ผ่าน/ไม่ผ่าน)", {
+        style: { background: "#DC2626", color: "white" },
+      });
+      setLoading(false);
+      return;
+    }
     try {
-      if (!place || !place.id) {
-        throw new Error("Invalid place ID");
-      }
-      if (!userProfile) {
-        throw new Error("User profile is not available");
-      }
-
       await saveReview(
         place.id,
         userProfile.userId,
@@ -143,17 +124,11 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
       );
 
       toast.success("บันทึกข้อคิดเห็นของท่านสำเร็จ", {
-        duration: 4000,
-        position: "bottom-center",
         style: {
-          background: "#10B981",
+          background: "#059669",
           color: "white",
           fontWeight: "bold",
-          padding: "16px",
-          borderRadius: "12px",
-          boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
         },
-        icon: <CheckCircle className="text-white" />,
       });
 
       onClose();
@@ -176,8 +151,8 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
         className="fixed inset-0 z-50 flex items-center justify-center px-4"
         overlayClassName="fixed inset-0 bg-black bg-opacity-50"
       >
-        <div className="bg-white w-full max-w-sm rounded-xl shadow-lg overflow-hidden transform transition-all">
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6 text-white">
+        <div className="bg-white w-full max-w-sm rounded-xl shadow-lg transform transition-all">
+          <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-6 text-white">
             <h2 className="text-lg font-bold flex items-center">
               <ClipboardCheck className="w-6 h-6 mr-2" />
               ตรวจสอบสถานที่
@@ -190,22 +165,21 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
                   alt={userProfile.displayName}
                   className="w-10 h-10 rounded-full shadow-lg"
                 />
-                <span className="text-sm font-semibold">
-                  {userProfile.displayName}
-                </span>
+                <span className="text-sm font-semibold">{userProfile.displayName}</span>
               </div>
             )}
           </div>
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-    <label className="block text-sm mb-2 text-gray-600">
-      เกณฑ์ <span className="text-red-500">*</span>
-    </label>
-    <StatusToggle status={reviewStatus} onStatusChange={setReviewStatus} />
-    {!reviewStatus && (
-      <p className="text-red-500 text-xs mt-1">กรุณาเลือกเกณฑ์ (ผ่าน/ไม่ผ่าน)</p>
-    )}
-  </div>
+            <div>
+              <label className="block text-sm mb-2 text-gray-600">
+                เกณฑ์ <span className="text-red-500">*</span>
+              </label>
+              <StatusToggle status={reviewStatus} onStatusChange={setReviewStatus} />
+              {!reviewStatus && (
+                <p className="text-red-500 text-xs mt-1">กรุณาเลือกเกณฑ์ (ผ่าน/ไม่ผ่าน)</p>
+              )}
+            </div>
+
             <div>
               <label className="block text-sm mb-2 text-gray-600">ให้ดาว</label>
               <StarRating stars={stars} setStars={setStars} />
@@ -213,14 +187,14 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
 
             <div className="relative">
               <label className="block text-sm mb-2 text-gray-600 flex items-center space-x-2">
-                <MessageCircle className="w-5 h-5 text-orange-500" />
+                <MessageCircle className="w-5 h-5 text-emerald-600" />
                 <span>ความคิดเห็น</span>
               </label>
               <textarea
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 rows={3}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 resize-none"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 resize-none"
                 placeholder="กรอกความคิดเห็น..."
               ></textarea>
             </div>
@@ -232,7 +206,7 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
                 className={`flex items-center justify-center py-3 rounded-lg transition-all duration-300 ${
                   !reviewStatus || loading
                     ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                    : "bg-orange-500 text-white hover:bg-orange-600"
+                    : "bg-emerald-600 text-white hover:bg-emerald-700"
                 }`}
               >
                 {loading ? (

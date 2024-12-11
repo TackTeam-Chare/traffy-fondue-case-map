@@ -537,18 +537,20 @@ const MapSearch = ({
       </div>
     </div>
 
-    {/* Average Stars */}
-    <div className="flex items-center justify-center bg-yellow-50 p-2 rounded-md border border-yellow-100">
-      <Star className="w-6 h-6 text-yellow-500" />
-      <p className="text-sm font-medium text-yellow-600 ml-2">
-        คะแนนเฉลี่ย:{" "}
-        <span className="text-yellow-700 font-bold">
-          {selectedPlace.reviewSummary.averageStars
-            ? selectedPlace.reviewSummary.averageStars.toFixed(1)
-            : "N/A"}
-        </span>
-      </p>
-    </div>
+  {/* Average Stars */}
+<div className="flex items-center justify-center bg-yellow-50 p-2 rounded-md border border-yellow-100">
+  <Star className="w-6 h-6 text-yellow-500" />
+  <p className="text-sm font-medium text-yellow-600 ml-2">
+    คะแนนเฉลี่ย:{" "}
+    <span className="text-yellow-700 font-bold">
+      {selectedPlace.reviewSummary?.averageStars != null &&
+      typeof selectedPlace.reviewSummary.averageStars === "number"
+        ? selectedPlace.reviewSummary.averageStars.toFixed(1)
+        : "N/A"}
+    </span>
+  </p>
+</div>
+
   </div>
 )}
 

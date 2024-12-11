@@ -113,13 +113,12 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
 
       await saveReview(
         place.id,
-        userProfile?.userId,
-        userProfile?.displayName,
+        userProfile.userId,
+        userProfile.displayName,
         reviewStatus,
         stars,
         comment
       );
-
 
       toast.success("บันทึกข้อคิดเห็นของท่านสำเร็จ", {
         duration: 4000,

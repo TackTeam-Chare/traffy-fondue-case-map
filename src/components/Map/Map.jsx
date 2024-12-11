@@ -289,7 +289,7 @@ useEffect(() => {
   return (
     <div className="relative h-screen">
       <GoogleMap
-        mapContainerStyle={{ width: "100%",  height: "calc(100vh - 10rem)", }}
+        mapContainerStyle={{ width: "100%",  height: "100vh", }}
         center={mapCenter}
         zoom={14}
         options={{
@@ -300,6 +300,7 @@ useEffect(() => {
           streetViewControl: false,
           disableDefaultUI: false,
           clickableIcons: false,
+          gestureHandling: "greedy", 
         }}
         onClick={handleMapClick}
         onLoad={(map) => {
@@ -457,7 +458,7 @@ useEffect(() => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-lg transform rounded-2xl bg-white p-6 shadow-2xl transition-all">
+                <Dialog.Panel className="w-full max-w-sm transform rounded-2xl bg-white p-4 shadow-2xl transition-all">
                   {/* Modal Header */}
                   <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center space-x-3">

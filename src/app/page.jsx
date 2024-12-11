@@ -1,6 +1,8 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import { getUserProfile } from "@/utils/auth";
+import liff from "@line/liff";
 import {
   FaMapMarkerAlt,
 } from "react-icons/fa";
@@ -26,14 +28,52 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 });
   const [isClient, setIsClient] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY
   });
 
+    // Check if the user is logged in
+    // const checkLoginStatus = async () => {
+    //   try {
+    //     await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID });
+    //     if (liff.isLoggedIn()) {
+    //       const profile = await liff.getProfile();
+    //       console.log("User is logged in:", profile);
+    //       setIsLoggedIn(true);
+    //     } else {
+    //       console.log("User is not logged in. Redirecting to login...");
+    //       liff.login();
+    //     }
+    //   } catch (error) {
+    //     console.error("Error checking login status:", error);
+    //   }
+    // };
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const fetchProfile = async () => {
+        try {
+          const profile = await getUserProfile();
+          setUserProfile(profile);
+        } catch (error) {
+          console.error("Failed to fetch user profile:", error);
+        }
+      };
+      fetchProfile();
+    }
+  }, []);
+  
   useEffect(() => {
     setIsClient(true); // ตั้งค่าว่าเป็น client-side (เบราว์เซอร์) โดยอัปเดต state
   }, []);
+
+  // useEffect(() => {
+  //   if (isClient) {
+  //     checkLoginStatus(); // Verify login when the page loads
+  //   }
+  // }, [isClient]);
 
   useEffect(() => {
     // ตรวจสอบว่ากำลังรันบน client-side (เบราว์เซอร์) หรือไม่
@@ -71,6 +111,7 @@ const Home = () => {
     // เรียกใช้ฟังก์ชัน updateLocation เมื่อ useEffect ทำงาน
     updateLocation();
   }, [isClient]); // useEffect จะทำงานใหม่เมื่อค่า isClient เปลี่ยนแปลง
+
 
   const fetchNearbyPlaces = async (lat, lng, radius) => {
     try {
@@ -124,6 +165,15 @@ const Home = () => {
       }
     );
   };
+  
+  if (!userProfile) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <Circles height="60" width="60" color="#FF7043" ariaLabel="loading-indicator" />
+        <p className="ml-4 text-gray-600">กำลังตรวจสอบสถานะการล็อกอิน</p>
+      </div>
+    );
+  }
   
   return (
       <div className="container  relativez mx-auto px-4 sm:px-6 lg:px-8">

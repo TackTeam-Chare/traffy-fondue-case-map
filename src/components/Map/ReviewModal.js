@@ -63,38 +63,60 @@ const StarRating = ({ stars, setStars }) => (
 );
 
 const ReviewModal = ({ isOpen, onClose, place }) => {
-  const [reviewStatus, setReviewStatus] = useState("pass");
+  const [reviewStatus, setReviewStatus] = useState(null); 
   const [stars, setStars] = useState(0);
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [userProfile, setUserProfile] = useState(null);
 
-  // Handle LINE Login and fetch profile
-  const handleLogin = async () => {
-    try {
-      // await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID });
-      await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID, debugMode: true });
 
-      if (!liff.isLoggedIn()) {
-        liff.login();
-      } else {
-        const profile = await liff.getProfile();
-        setUserProfile(profile);
+    // รีเซ็ตค่าทั้งหมดเมื่อ `place` เปลี่ยน
+    useEffect(() => {
+      if (place) {
+        setReviewStatus(null);
+        setStars(0);
+        setComment("");
       }
-    } catch (error) {
-      console.error("LINE Login Error:", error);
-    }
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      handleLogin();
-    }
-  }, [isOpen]);
+    }, [place]);
+    
+    // Fetch profile from localStorage or re-login using LIFF
+    const fetchUserProfile = async () => {
+      const storedProfile = localStorage.getItem("userProfile");
+      if (storedProfile) {
+        setUserProfile(JSON.parse(storedProfile)); // Use existing profile
+      } else {
+        try {
+          await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID });
+          if (!liff.isLoggedIn()) {
+            liff.login();
+          } else {
+            const profile = await liff.getProfile();
+            setUserProfile(profile);
+            localStorage.setItem("userProfile", JSON.stringify(profile)); // Save profile for later use
+          }
+        } catch (error) {
+          console.error("LINE Login Error:", error);
+        }
+      }
+    };
+  
+    useEffect(() => {
+      if (isOpen) {
+        fetchUserProfile();
+      }
+    }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+      // Input validation
+  if (!reviewStatus) {
+    toast.error("กรุณาเลือกเกณฑ์ (ผ่าน/ไม่ผ่าน)", {
+      style: { background: "#DC2626", color: "white" },
+    });
+    setLoading(false);
+    return;
+  }
     console.log({
       placeId: place.id,
       userId: userProfile?.userId,
@@ -175,11 +197,15 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
             )}
           </div>
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            <div>
-              <label className="block text-sm mb-2 text-gray-600">เกณฑ์</label>
-              <StatusToggle status={reviewStatus} onStatusChange={setReviewStatus} />
-            </div>
-
+          <div>
+    <label className="block text-sm mb-2 text-gray-600">
+      เกณฑ์ <span className="text-red-500">*</span>
+    </label>
+    <StatusToggle status={reviewStatus} onStatusChange={setReviewStatus} />
+    {!reviewStatus && (
+      <p className="text-red-500 text-xs mt-1">กรุณาเลือกเกณฑ์ (ผ่าน/ไม่ผ่าน)</p>
+    )}
+  </div>
             <div>
               <label className="block text-sm mb-2 text-gray-600">ให้ดาว</label>
               <StarRating stars={stars} setStars={setStars} />
@@ -194,7 +220,6 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 rows={3}
-                required
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 resize-none"
                 placeholder="กรอกความคิดเห็น..."
               ></textarea>
@@ -203,8 +228,12 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
             <div className="grid grid-cols-2 gap-4">
               <button
                 type="submit"
-                disabled={loading}
-                className="flex items-center justify-center bg-orange-500 text-white rounded-lg py-3 hover:bg-orange-600"
+                disabled={!reviewStatus || loading}
+                className={`flex items-center justify-center py-3 rounded-lg transition-all duration-300 ${
+                  !reviewStatus || loading
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-orange-500 text-white hover:bg-orange-600"
+                }`}
               >
                 {loading ? (
                   <Loader2 className="animate-spin mr-2 w-5 h-5" />

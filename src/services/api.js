@@ -5,7 +5,7 @@ const api = axios.create({
 })
 
 // Function to fetch places nearby by coordinates, including review summaries
-export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius = 5000) => {
+export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius = 50000) => {
   try {
     // Make a GET request to the backend endpoint
     const response = await api.get(`/places/nearby-by-coordinates`, {

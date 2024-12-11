@@ -32,7 +32,7 @@ const MapSearch = ({
 }) => {
   const mapRef = useRef(null);
   const [clickLocation, setClickLocation] = useState(null);
-  const [radius, setRadius] = useState(5000);
+  const [radius, setRadius] = useState(50000);
   const [directions, setDirections] = useState(null);
   const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
   const [currentLegIndex, setCurrentLegIndex] = useState(0);
@@ -180,21 +180,57 @@ const MapSearch = ({
       };
     }
   }, [selectedPlace, calculateRoutes, destinationReached]);
-
-  // ดึงตำแหน่งเริ่มต้นของผู้ใช้
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-        },
-        (error) => console.error("Error fetching initial location:", error)
-      );
+  
+ // ดึงตำแหน่งเริ่มต้นของผู้ใช้
+useEffect(() => {
+  const checkGeolocationPermission = async () => {
+    if (!navigator.permissions || !navigator.geolocation) {
+      console.error("Permissions API or Geolocation is not supported by this browser.");
+      return;
     }
-  }, []);
+
+    try {
+      const permissionStatus = await navigator.permissions.query({ name: "geolocation" });
+      if (permissionStatus.state === "granted") {
+        // ถ้าได้รับอนุญาตแล้ว ให้ดึงตำแหน่งปัจจุบัน
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setUserLocation({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            });
+          },
+          (error) => console.error("Error fetching initial location:", error),
+          { enableHighAccuracy: true }
+        );
+      } else if (permissionStatus.state === "prompt") {
+        // ถ้าสถานะคือ prompt ให้ขอสิทธิ์จากผู้ใช้
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            setUserLocation({
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            });
+          },
+          (error) => console.error("Error fetching initial location:", error),
+          { enableHighAccuracy: true }
+        );
+      } else {
+        console.warn("Geolocation permission denied.");
+      }
+
+      // Listen for changes in permission state
+      permissionStatus.onchange = () => {
+        console.log(`Permission state changed to: ${permissionStatus.state}`);
+      };
+    } catch (error) {
+      console.error("Error checking geolocation permissions:", error);
+    }
+  };
+
+  checkGeolocationPermission();
+}, []);
+
 
   // Automatically Update Current Step Index
   useEffect(() => {

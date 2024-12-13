@@ -11,6 +11,7 @@ export const getUserProfile = async () => {
       } else {
         const profile = await liff.getProfile();
         localStorage.setItem("userProfile", JSON.stringify(profile)); // Save profile to localStorage
+        window.location.href = "/"; 
         return profile;
       }
     } catch (error) {

@@ -50,6 +50,22 @@ const Home = () => {
   }, []);
   
   useEffect(() => {
+    const hideLiffAlert = () => {
+        const alertElement = document.querySelector(".liff-alert-class");
+        if (alertElement) {
+            alertElement.style.display = "none"; // ซ่อนข้อความ
+        }
+    };
+
+    hideLiffAlert();
+
+    // รอให้ DOM โหลดเสร็จและลองซ่อนอีกครั้ง
+    const timeout = setTimeout(hideLiffAlert, 1000);
+
+    return () => clearTimeout(timeout); // Cleanup
+}, []);
+
+  useEffect(() => {
     setIsClient(true); // ตั้งค่าว่าเป็น client-side (เบราว์เซอร์) โดยอัปเดต state
   }, []);
 

@@ -4,7 +4,6 @@ import { Dialog, Transition } from "@headlessui/react";
 import {
   GoogleMap,
   Marker,
-  InfoWindow,
   DirectionsRenderer,
   Circle,
 } from "@react-google-maps/api";
@@ -293,7 +292,6 @@ useEffect(() => {
         center={mapCenter}
         zoom={14}
         options={{
-          // styles: mapStyles,
           zoomControl: true,
           mapTypeControl: false,
           fullscreenControl: false,
@@ -458,7 +456,7 @@ useEffect(() => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="w-full max-w-sm transform rounded-2xl bg-white p-4 shadow-2xl transition-all">
+                   <Dialog.Panel className="bg-white rounded-xl p-4 max-w-sm shadow-xl w-full">
                   {/* Modal Header */}
                   <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center space-x-3">

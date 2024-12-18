@@ -522,14 +522,17 @@ useEffect(() => {
                           </div>
                         </div>
                         <div className="flex items-center justify-center bg-yellow-100 p-3 rounded-lg">
-                          <Star className="w-6 h-6 text-yellow-500 mr-2" />
-                          <p className="text-emerald-900 font-bold">
-                            คะแนนเฉลี่ย:{" "}
-                            <span className="text-emerald-700">
-                              {selectedPlace.reviewSummary.averageStars?.toFixed(1) || "N/A"}
-                            </span>
-                          </p>
-                        </div>
+  <Star className="w-6 h-6 text-yellow-500 mr-2" />
+  <p className="text-emerald-900 font-bold">
+    คะแนนเฉลี่ย:{" "}
+    <span className="text-emerald-700">
+      {selectedPlace?.reviewSummary?.averageStars
+        ? parseFloat(selectedPlace.reviewSummary.averageStars).toFixed(1)
+        : "N/A"}
+    </span>
+  </p>
+</div>
+
                       </div>
                     )}
                   </div>

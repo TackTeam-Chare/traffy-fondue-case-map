@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { getUserProfile } from "@/utils/auth";
 
 import {
   FaMapMarkerAlt,
@@ -29,41 +28,11 @@ const Home = () => {
   const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 });
   const [isClient, setIsClient] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userProfile, setUserProfile] = useState(null);
 
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY
   });
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const fetchProfile = async () => {
-        try {
-          const profile = await getUserProfile();
-          setUserProfile(profile);
-        } catch (error) {
-          console.error("Failed to fetch user profile:", error);
-        }
-      };
-      fetchProfile();
-    }
-  }, []);
-  
-  useEffect(() => {
-    const hideLiffAlert = () => {
-        const alertElement = document.querySelector(".liff-alert-class");
-        if (alertElement) {
-            alertElement.style.display = "none"; // ซ่อนข้อความ
-        }
-    };
-
-    hideLiffAlert();
-
-    // รอให้ DOM โหลดเสร็จและลองซ่อนอีกครั้ง
-    const timeout = setTimeout(hideLiffAlert, 1000);
-
-    return () => clearTimeout(timeout); // Cleanup
-}, []);
 
   useEffect(() => {
     setIsClient(true); // ตั้งค่าว่าเป็น client-side (เบราว์เซอร์) โดยอัปเดต state
@@ -159,15 +128,6 @@ const Home = () => {
       }
     );
   };
-  
-  if (!userProfile) {
-    return (
-      <div className="h-screen flex items-center justify-center">
-        <Circles height="60" width="60" color="#15803d" ariaLabel="loading-indicator" />
-        <p className="ml-4 text-gray-600">กำลังตรวจสอบสถานะการล็อกอิน</p>
-      </div>
-    );
-  }
   
   return (
       <div className="container  relativez mx-auto px-4 sm:px-6 lg:px-8">

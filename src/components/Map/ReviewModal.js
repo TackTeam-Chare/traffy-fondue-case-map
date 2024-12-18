@@ -12,7 +12,7 @@ import {
 import { saveReview } from "@/services/api";
 import { Toaster, toast } from "react-hot-toast";
 import liff from "@line/liff";
-
+import { getUserProfile } from "@/utils/auth";
 if (typeof window !== "undefined") {
   Modal.setAppElement("body");
 }
@@ -68,7 +68,7 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [userProfile, setUserProfile] = useState(null);
-
+  
   useEffect(() => {
     if (place) {
       setReviewStatus(null);
@@ -76,6 +76,37 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
       setComment("");
     }
   }, [place]);
+
+  
+    useEffect(() => {
+      if (typeof window !== "undefined") {
+        const fetchProfile = async () => {
+          try {
+            const profile = await getUserProfile();
+            setUserProfile(profile);
+          } catch (error) {
+            console.error("Failed to fetch user profile:", error);
+          }
+        };
+        fetchProfile();
+      }
+    }, []);
+    
+    useEffect(() => {
+      const hideLiffAlert = () => {
+          const alertElement = document.querySelector(".liff-alert-class");
+          if (alertElement) {
+              alertElement.style.display = "none"; // ซ่อนข้อความ
+          }
+      };
+  
+      hideLiffAlert();
+  
+      // รอให้ DOM โหลดเสร็จและลองซ่อนอีกครั้ง
+      const timeout = setTimeout(hideLiffAlert, 1000);
+  
+      return () => clearTimeout(timeout); // Cleanup
+  }, []);
 
   const fetchUserProfile = async () => {
     const storedProfile = localStorage.getItem("userProfile");

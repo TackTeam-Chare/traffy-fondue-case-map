@@ -32,11 +32,19 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
       ],
       star: place.star || 0,
       view_count: place.view_count || 0,
+      // reviewSummary: {
+      //   totalReviews: place.reviewSummary?.total_reviews || 0,
+      //   passCount: place.reviewSummary?.pass_count || 0,
+      //   failCount: place.reviewSummary?.fail_count || 0,
+      //   averageStars: place.reviewSummary?.average_stars || 0,
+      // },
       reviewSummary: {
         totalReviews: place.reviewSummary?.total_reviews || 0,
         passCount: place.reviewSummary?.pass_count || 0,
         failCount: place.reviewSummary?.fail_count || 0,
-        averageStars: place.reviewSummary?.average_stars || 0,
+        averageStars: place.reviewSummary?.average_stars
+          ? parseFloat(place.reviewSummary.average_stars) // Ensure it's a float
+          : 0, // Default to 0 if null or invalid
       },
     }));
   } catch (error) {

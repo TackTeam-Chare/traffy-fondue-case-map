@@ -27,22 +27,12 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
       latitude: Number.parseFloat(place.coords.split(",")[1]), // Parse latitude
       longitude: Number.parseFloat(place.coords.split(",")[0]), // Parse longitude
       address: place.address || "No address provided",
-      // images: [
-      //   { image_url: place.photo_after || "/icons/location-pin.png" },
-      //   ...(place.photo_after ? [{ image_url: place.photo_after }] : []),
-      // ],
       images: [
         ...(place.photo ? [{ image_url: place.photo }] : []), // รูปภาพก่อน
         ...(place.photo_after ? [{ image_url: place.photo_after }] : []), // รูปภาพหลัง
       ],
       star: place.star || 0,
       view_count: place.view_count || 0,
-      // reviewSummary: {
-      //   totalReviews: place.reviewSummary?.total_reviews || 0,
-      //   passCount: place.reviewSummary?.pass_count || 0,
-      //   failCount: place.reviewSummary?.fail_count || 0,
-      //   averageStars: place.reviewSummary?.average_stars || 0,
-      // },
       reviewSummary: {
         totalReviews: place.reviewSummary?.total_reviews || 0,
         passCount: place.reviewSummary?.pass_count || 0,
@@ -59,24 +49,11 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
   }
 };
 
-export const saveReview = async (placeId, userId, displayName, reviewStatus, stars, comment) => {
+export const saveReview = async (formData) => {
   try {
-    const timestamp = new Date().toISOString();
-
     const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/save-review`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        placeId,
-        userId,
-        displayName,
-        reviewStatus,
-        stars,
-        comment,
-        timestamp,
-      }),
+      body: formData, // Pass FormData directly as the body
     });
 
     if (!response.ok) {
@@ -90,5 +67,6 @@ export const saveReview = async (placeId, userId, displayName, reviewStatus, sta
     throw error;
   }
 };
+
 
 

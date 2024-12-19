@@ -68,12 +68,13 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [userProfile, setUserProfile] = useState(null);
-  
+  const [selectedFile, setSelectedFile] = useState(null);
   useEffect(() => {
     if (place) {
       setReviewStatus(null);
       setStars(0);
       setComment("");
+      setSelectedFile(null);
     }
   }, [place]);
 
@@ -135,9 +136,18 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
     }
   }, [isOpen]);
 
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+  
     if (!reviewStatus) {
       toast.error("กรุณาเลือกเกณฑ์ (ผ่าน/ไม่ผ่าน)", {
         style: { background: "#DC2626", color: "white" },
@@ -145,16 +155,28 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
       setLoading(false);
       return;
     }
+  
     try {
-      await saveReview(
-        place.id,
-        userProfile.userId,
-        userProfile.displayName,
-        reviewStatus,
-        stars,
-        comment
-      );
-
+      // Create a FormData object
+      const formData = new FormData();
+  
+      // Append data to the FormData object
+      formData.append("placeId", place.id);
+      formData.append("userId", userProfile.userId);
+      formData.append("displayName", userProfile.displayName);
+      formData.append("reviewStatus", reviewStatus);
+      formData.append("stars", stars);
+      formData.append("comment", comment);
+      formData.append("timestamp", new Date().toISOString());
+  
+      // Append the selected file if available
+      if (selectedFile) {
+        formData.append("image", selectedFile);
+      }
+  
+      // Call the saveReview function
+      await saveReview(formData);
+  
       toast.success("บันทึกข้อคิดเห็นของท่านสำเร็จ", {
         style: {
           background: "#059669",
@@ -162,7 +184,7 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
           fontWeight: "bold",
         },
       });
-
+  
       onClose();
     } catch (error) {
       toast.error("เกิดข้อผิดพลาด! โปรดลองอีกครั้ง", {
@@ -172,6 +194,8 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
       setLoading(false);
     }
   };
+  
+
 
   return (
     <>
@@ -211,6 +235,17 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
               {!reviewStatus && (
                 <p className="text-red-500 text-xs mt-1">กรุณาเลือกเกณฑ์ (ผ่าน/ไม่ผ่าน)</p>
               )}
+            </div>
+            <div>
+              {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
+<label className="block text-sm mb-2 text-gray-600">อัปโหลดรูปภาพ</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-600 hover:file:bg-emerald-100"
+              />
+              {selectedFile && <p className="text-sm mt-2">เลือกไฟล์: {selectedFile.name}</p>}
             </div>
 
             <div>

@@ -44,19 +44,15 @@ const MapSearch = ({
   const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false); // Comments modal state
   const [commentsData, setCommentsData] = useState({ comments: [], title: "" }); // Selected comments
 
-  const handleViewComments = (comments, title) => {
-    setCommentsData({ comments, title });
+  const handleViewComments = (comments, status) => {
+    setCommentsData({ comments, status });
     setIsCommentsModalOpen(true);
   };
+  
 
   const closeCommentsModal = () => {
     setIsCommentsModalOpen(false);
     setCommentsData({ comments: [], title: "" });
-  };
-  
-  const fetchComments = (type) => {
-    const comments = type === "agree" ? selectedPlace.agreeComments : selectedPlace.disagreeComments;
-    return comments || [];
   };
 
   // Handle opening the ReviewModal and closing the main Dialog
@@ -153,23 +149,24 @@ const MapSearch = ({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
-      if (selectedPlace) {
-        if (!navigator.geolocation) {
-          console.error("Geolocation is not supported by this browser.");
-          return;
-        }
+    if (selectedPlace) {
+      if (!navigator.geolocation) {
+        console.error("Geolocation is not supported by this browser.");
+        return;
+      }
       watcherIdRef.current = navigator.geolocation.watchPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           const newLocation = { lat: latitude, lng: longitude };
           setUserLocation(newLocation);
-         const distance = calculateDistance(
+  
+          const distance = calculateDistance(
             latitude,
             longitude,
             selectedPlace.latitude,
             selectedPlace.longitude
           );
-
+  
           if (distance < 50 && !destinationReached) {
             setDestinationReached(true);
             navigator.geolocation.clearWatch(watcherIdRef.current);
@@ -183,20 +180,19 @@ const MapSearch = ({
         },
         (error) => {
           console.error("Error watching position:", error);
+          let message = "An unknown error occurred.";
           switch (error.code) {
             case error.PERMISSION_DENIED:
-              alert("Permission denied for location access.");
+              message = "Permission denied for location access.";
               break;
             case error.POSITION_UNAVAILABLE:
-              alert("Location unavailable.");
+              message = "Location unavailable.";
               break;
             case error.TIMEOUT:
-              alert("Location request timed out.");
-              break;
-            default:
-              alert("An unknown error occurred.");
+              message = "Location request timed out.";
               break;
           }
+          alert(message);
         },
         {
           enableHighAccuracy: true,
@@ -212,6 +208,7 @@ const MapSearch = ({
       };
     }
   }, [selectedPlace, calculateRoutes, destinationReached]);
+  
   
  // ดึงตำแหน่งเริ่มต้นของผู้ใช้
 useEffect(() => {
@@ -464,7 +461,7 @@ useEffect(() => {
           >
             <div className="fixed inset-0 bg-emerald-900 bg-opacity-40" />
           </Transition.Child>
-
+        
           <div className="fixed inset-0 overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4">
               <Transition.Child
@@ -567,44 +564,44 @@ useEffect(() => {
         <div className="flex flex-col items-center bg-green-100 p-3 rounded-lg">
           <Check className="w-7 h-7 text-green-600 mb-2" />
           <p className="text-green-800 font-semibold">
-            ผ่าน: {selectedPlace.reviewSummary.passCount || 0}
+            เห็นด้วย: {selectedPlace.reviewSummary.passCount || 0}
           </p>
           <p className="text-sm text-gray-600">
             ความคิดเห็น: {selectedPlace?.agreeComments?.length || 0}
           </p>
           {selectedPlace?.agreeComments?.length > 0 && (
-            // biome-ignore lint/a11y/useButtonType: <explanation>
+          // biome-ignore lint/a11y/useButtonType: <explanation>
 <button
-              onClick={() =>
-                handleViewComments(selectedPlace.agreeComments, "ความคิดเห็นที่เห็นด้วย")
-              }
-              className="text-green-700 underline text-sm mt-2"
-            >
-              ดูความคิดเห็น
-            </button>
-          )}
+            onClick={() =>
+              handleViewComments(selectedPlace.agreeComments, "agree")
+            }
+            className="text-green-700 underline text-sm mt-2"
+          >
+            ดูความคิดเห็น
+          </button>
+        )}
         </div>
 
         {/* Fail Section */}
         <div className="flex flex-col items-center bg-red-100 p-3 rounded-lg">
           <XCircle className="w-7 h-7 text-red-600 mb-2" />
           <p className="text-red-800 font-semibold">
-            ไม่ผ่าน: {selectedPlace.reviewSummary.failCount || 0}
+            ไม่เห็นด้วย: {selectedPlace.reviewSummary.failCount || 0}
           </p>
           <p className="text-sm text-gray-600">
             ความคิดเห็น: {selectedPlace?.disagreeComments?.length || 0}
           </p>
           {selectedPlace?.disagreeComments?.length > 0 && (
-            // biome-ignore lint/a11y/useButtonType: <explanation>
+          // biome-ignore lint/a11y/useButtonType: <explanation>
 <button
-              onClick={() =>
-                handleViewComments(selectedPlace.disagreeComments, "ความคิดเห็นที่ไม่เห็นด้วย")
-              }
-              className="text-red-700 underline text-sm mt-2"
-            >
-              ดูความคิดเห็น
-            </button>
-          )}
+            onClick={() =>
+              handleViewComments(selectedPlace.disagreeComments, "disagree")
+            }
+            className="text-red-700 underline text-sm mt-2"
+          >
+            ดูความคิดเห็น
+          </button>
+        )}
         </div>
       </div>
       <div className="flex items-center justify-center bg-yellow-100 p-3 rounded-lg">
@@ -668,33 +665,46 @@ useEffect(() => {
       }}
       place={selectedPlace}
         userLocation={userLocation}
-        
       />
-   
     )}
+
      {/* Comments Modal */}
-     {isCommentsModalOpen && (
-        <Dialog
-          as="div"
-          className="relative z-50"
-          open={isCommentsModalOpen}
-          onClose={closeCommentsModal}
-        >
-          <div className="fixed inset-0 bg-black bg-opacity-40" />
-          <div className="fixed inset-0 flex items-center justify-center">
-            <Dialog.Panel className="bg-white p-4 rounded-xl w-full max-w-md shadow-lg">
-              <CommentsSection
-                comments={commentsData.comments}
-                status={commentsData.title.includes("เห็นด้วย") ? "agree" : "disagree"}
-              />
-              {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-<button onClick={closeCommentsModal} className="mt-4 bg-gray-500 text-white px-4 py-2 rounded-lg">
-                ปิด
-              </button>
-            </Dialog.Panel>
-          </div>
-        </Dialog>
-      )}
+{isCommentsModalOpen && (
+  <Dialog
+    as="div"
+    className="relative z-50"
+    open={isCommentsModalOpen}
+    onClose={closeCommentsModal}
+  >
+    <div className="fixed inset-0 bg-black bg-opacity-40" />
+    <div className="fixed inset-0 flex items-center justify-center p-4">
+      <Dialog.Panel
+        className="bg-white p-4 sm:p-6 rounded-xl w-full max-w-lg shadow-lg overflow-hidden max-h-[90vh] flex flex-col"
+      >
+        {/* Content Section */}
+        <div className="flex-1 overflow-y-auto">
+        <CommentsSection
+  comments={commentsData.comments || []} // Default to an empty array
+  status={commentsData.status || "agree"} // Default status to "agree"
+/>
+
+        </div>
+        {/* Close Button */}
+        <div className="mt-4 flex justify-end">
+          {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+<button
+            onClick={closeCommentsModal}
+            className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+          >
+            ปิด
+          </button>
+        </div>
+      </Dialog.Panel>
+    </div>
+  </Dialog>
+)}
+
+
     </div>
   
   );

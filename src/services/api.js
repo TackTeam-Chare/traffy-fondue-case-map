@@ -41,7 +41,9 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
           ? Number.parseFloat(place.reviewSummary.average_stars) // Ensure it's a float
           : 0, // Default to 0 if null or invalid
       },
-      investigators: place.investigators || [], 
+      investigators: place.investigators || [],
+      agreeComments: place.agreeComments || [],
+      disagreeComments: place.disagreeComments || [],
     }));
   } catch (error) {
     console.error("Error fetching places nearby by coordinates:", error);

@@ -20,10 +20,10 @@ import {
 } from "lucide-react";
 import NextImage from "next/image";
 import ReviewModal from "@/components/Map/ReviewModal";
-
+import CommentsList from "@/components/Map/CommentsSection";
 const MapSearch = ({
   isLoaded,
-  // userLocation,
+
   mapCenter,
   searchResults,
   nearbyPlaces,
@@ -476,8 +476,6 @@ useEffect(() => {
                       <XCircle className="w-6 h-6" />
                     </button>
                   </div>
-
-                  {/* Image Section */}
                {/* Image Section */}
 <div className="mb-6 grid grid-cols-2 gap-4">
   {/* รูปภาพก่อน */}
@@ -573,6 +571,24 @@ useEffect(() => {
 
                       </div>
                     )}
+                         {/* Agree Comments */}
+                {selectedPlace?.agreeComments?.length > 0 && (
+                  <CommentsList
+                    comments={selectedPlace.agreeComments}
+                    title="Agree Comments"
+                    icon={<Check className="text-green-500" />}
+                  />
+                )}
+
+                {/* Disagree Comments */}
+                {selectedPlace?.disagreeComments?.length > 0 && (
+                  <CommentsList
+                    comments={selectedPlace.disagreeComments}
+                    title="Disagree Comments"
+                    icon={<XCircle className="text-red-500" />}
+                  />
+                )}
+
                   </div>
 
                   {/* Action Buttons */}

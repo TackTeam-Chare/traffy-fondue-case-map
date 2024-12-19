@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
+import Image from 'next/image'
 import {
   CheckCircle2,
   XCircle,
@@ -68,13 +69,14 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [userProfile, setUserProfile] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
+
+  const [selectedFiles, setSelectedFiles] = useState([]); 
   useEffect(() => {
     if (place) {
       setReviewStatus(null);
       setStars(0);
       setComment("");
-      setSelectedFile(null);
+      setSelectedFiles([]); 
     }
   }, [place]);
 
@@ -138,11 +140,26 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
 
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
+    const files = Array.from(e.target.files);
+    const maxFiles = 10;
+    const maxFileSizeMB = 5;
+  
+    // ตรวจสอบจำนวนไฟล์
+    if (files.length > maxFiles) {
+      toast.error(`ไม่สามารถอัปโหลดไฟล์ได้เกิน ${maxFiles} ไฟล์`);
+      return;
     }
+  
+    // ตรวจสอบขนาดไฟล์
+    const oversizedFiles = files.filter((file) => file.size > maxFileSizeMB * 1024 * 1024);
+    if (oversizedFiles.length > 0) {
+      toast.error(`ไฟล์ที่อัปโหลดต้องมีขนาดไม่เกิน ${maxFileSizeMB} MB ต่อไฟล์`);
+      return;
+    }
+  
+    setSelectedFiles(files);
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -168,11 +185,12 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
       formData.append("stars", stars);
       formData.append("comment", comment);
       formData.append("timestamp", new Date().toISOString());
-  
-      // Append the selected file if available
-      if (selectedFile) {
-        formData.append("image", selectedFile);
-      }
+
+        // Append all selected files
+        // biome-ignore lint/complexity/noForEach: <explanation>
+                                                selectedFiles.forEach((file) => {
+          formData.append("images", file);
+        });
   
       // Call the saveReview function
       await saveReview(formData);
@@ -216,9 +234,12 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
             <p className="text-sm mt-1">{place?.ticket_id || "Unknown Location"}</p>
             {userProfile && (
               <div className="flex items-center space-x-3 mt-3">
-                <img
+                <Image
                   src={userProfile.pictureUrl}
                   alt={userProfile.displayName}
+                  width={200} // Specify the width
+                  height={200} // Specify the height
+                  unoptimized
                   className="w-10 h-10 rounded-full shadow-lg"
                 />
                 <span className="text-sm font-semibold">{userProfile.displayName}</span>
@@ -229,24 +250,48 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
             <div>
               {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
 <label className="block text-sm mb-2 text-gray-600">
-                เกณฑ์ <span className="text-red-500">*</span>
+                เห็นด้วยหรือไม่? <span className="text-red-500">*</span>
               </label>
               <StatusToggle status={reviewStatus} onStatusChange={setReviewStatus} />
               {!reviewStatus && (
                 <p className="text-red-500 text-xs mt-1">กรุณาเลือกเกณฑ์ (ผ่าน/ไม่ผ่าน)</p>
               )}
             </div>
-            <div>
-              {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
-<label className="block text-sm mb-2 text-gray-600">อัปโหลดรูปภาพ</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-600 hover:file:bg-emerald-100"
-              />
-              {selectedFile && <p className="text-sm mt-2">เลือกไฟล์: {selectedFile.name}</p>}
-            </div>
+        {/* File Upload */}
+        <div>
+  {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
+  <label className="block text-sm mb-2 text-gray-600">
+    อัปโหลดรูปภาพที่ได้ตรวจสอบ
+  </label>
+  <p className="text-xs text-gray-500 mb-2">
+    อัปโหลดได้ไม่เกิน <span className="text-emerald-600 font-semibold">10 ภาพ</span> และขนาดไฟล์ไม่เกิน <span className="text-emerald-600 font-semibold">5MB</span> ต่อภาพ
+  </p>
+  <input
+    type="file"
+    accept="image/*"
+    multiple
+    onChange={handleFileChange}
+    className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-600 hover:file:bg-emerald-100"
+  />
+  {selectedFiles.length > 0 && (
+    <div className="mt-2 grid grid-cols-3 gap-2">
+      {selectedFiles.map((file, index) => (
+        <Image
+          // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+          key={index}
+          src={URL.createObjectURL(file)}
+          alt={`Preview ${index}`}
+          className="w-full h-20 object-cover rounded-lg"
+          width={200} // Specify the width
+          height={200} // Specify the height
+          unoptimized
+        />
+      ))}
+    </div>
+  )}
+</div>
+
+
 
             <div>
               {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
@@ -256,9 +301,9 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
 
             <div className="relative">
               {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
-<label className="block text-sm mb-2 text-gray-600 flex items-center space-x-2">
+<label className=" text-sm mb-2 text-gray-600 flex items-center space-x-2">
                 <MessageCircle className="w-5 h-5 text-emerald-600" />
-                <span>ความคิดเห็น</span>
+                <span>ความคิดเห็นหรือข้อเสนอเเนะ</span>
               </label>
               {/* biome-ignore lint/style/useSelfClosingElements: <explanation> */}
 <textarea

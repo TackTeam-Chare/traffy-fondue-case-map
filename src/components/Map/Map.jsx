@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import NextImage from "next/image";
 import ReviewModal from "@/components/Map/ReviewModal";
-import CommentsList from "@/components/Map/CommentsSection";
+import CommentsSection  from "@/components/Map/CommentsSection";
 const MapSearch = ({
   isLoaded,
 
@@ -41,6 +41,23 @@ const MapSearch = ({
   const watcherIdRef = useRef(null);
   const [isModalOpen, setIsModalOpen] = useState(false); // For ReviewModal
   const [isDialogOpen, setIsDialogOpen] = useState(true); // For Dialog modal
+  const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false); // Comments modal state
+  const [commentsData, setCommentsData] = useState({ comments: [], title: "" }); // Selected comments
+
+  const handleViewComments = (comments, title) => {
+    setCommentsData({ comments, title });
+    setIsCommentsModalOpen(true);
+  };
+
+  const closeCommentsModal = () => {
+    setIsCommentsModalOpen(false);
+    setCommentsData({ comments: [], title: "" });
+  };
+  
+  const fetchComments = (type) => {
+    const comments = type === "agree" ? selectedPlace.agreeComments : selectedPlace.disagreeComments;
+    return comments || [];
+  };
 
   // Handle opening the ReviewModal and closing the main Dialog
   const handleReviewButtonClick = () => {
@@ -537,57 +554,73 @@ useEffect(() => {
   </div>
 )}
 
-                    {/* Review Summary with Enhanced Green Theme */}
-                    {selectedPlace?.reviewSummary && (
-                      <div className="bg-emerald-50 p-5 rounded-xl border border-emerald-200 space-y-4">
-                        <div className="text-center">
-                          <h4 className="text-lg font-bold text-emerald-800">สรุปผลโหวต</h4>
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="flex flex-col items-center bg-green-100 p-3 rounded-lg">
-                            <Check className="w-7 h-7 text-green-600 mb-2" />
-                            <p className="text-green-800 font-semibold">
-                              ผ่าน: {selectedPlace.reviewSummary.passCount || 0}
-                            </p>
-                          </div>
-                          <div className="flex flex-col items-center bg-red-100 p-3 rounded-lg">
-                            <XCircle className="w-7 h-7 text-red-600 mb-2" />
-                            <p className="text-red-800 font-semibold">
-                              ไม่ผ่าน: {selectedPlace.reviewSummary.failCount || 0}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-center bg-yellow-100 p-3 rounded-lg">
-  <Star className="w-6 h-6 text-yellow-500 mr-2" />
-  <p className="text-emerald-900 font-bold">
-    คะแนนเฉลี่ย:{" "}
-    <span className="text-emerald-700">
-      {selectedPlace?.reviewSummary?.averageStars
-        ? Number.parseFloat(selectedPlace.reviewSummary.averageStars).toFixed(1)
-        : "N/A"}
-    </span>
-  </p>
-</div>
+                  {/* Review Summary */}
 
-                      </div>
-                    )}
-                         {/* Agree Comments */}
-                {selectedPlace?.agreeComments?.length > 0 && (
-                  <CommentsList
-                    comments={selectedPlace.agreeComments}
-                    title="Agree Comments"
-                    icon={<Check className="text-green-500" />}
-                  />
-                )}
+{selectedPlace?.reviewSummary &&
+  (selectedPlace.reviewSummary.passCount > 0 || selectedPlace.reviewSummary.failCount > 0) && (
+    <div className="bg-emerald-50 p-5 rounded-xl border border-emerald-200 space-y-4">
+      <div className="text-center">
+        <h4 className="text-lg font-bold text-emerald-800">สรุปผลโหวต</h4>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        {/* Pass Section */}
+        <div className="flex flex-col items-center bg-green-100 p-3 rounded-lg">
+          <Check className="w-7 h-7 text-green-600 mb-2" />
+          <p className="text-green-800 font-semibold">
+            ผ่าน: {selectedPlace.reviewSummary.passCount || 0}
+          </p>
+          <p className="text-sm text-gray-600">
+            ความคิดเห็น: {selectedPlace?.agreeComments?.length || 0}
+          </p>
+          {selectedPlace?.agreeComments?.length > 0 && (
+            // biome-ignore lint/a11y/useButtonType: <explanation>
+<button
+              onClick={() =>
+                handleViewComments(selectedPlace.agreeComments, "ความคิดเห็นที่เห็นด้วย")
+              }
+              className="text-green-700 underline text-sm mt-2"
+            >
+              ดูความคิดเห็น
+            </button>
+          )}
+        </div>
 
-                {/* Disagree Comments */}
-                {selectedPlace?.disagreeComments?.length > 0 && (
-                  <CommentsList
-                    comments={selectedPlace.disagreeComments}
-                    title="Disagree Comments"
-                    icon={<XCircle className="text-red-500" />}
-                  />
-                )}
+        {/* Fail Section */}
+        <div className="flex flex-col items-center bg-red-100 p-3 rounded-lg">
+          <XCircle className="w-7 h-7 text-red-600 mb-2" />
+          <p className="text-red-800 font-semibold">
+            ไม่ผ่าน: {selectedPlace.reviewSummary.failCount || 0}
+          </p>
+          <p className="text-sm text-gray-600">
+            ความคิดเห็น: {selectedPlace?.disagreeComments?.length || 0}
+          </p>
+          {selectedPlace?.disagreeComments?.length > 0 && (
+            // biome-ignore lint/a11y/useButtonType: <explanation>
+<button
+              onClick={() =>
+                handleViewComments(selectedPlace.disagreeComments, "ความคิดเห็นที่ไม่เห็นด้วย")
+              }
+              className="text-red-700 underline text-sm mt-2"
+            >
+              ดูความคิดเห็น
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center justify-center bg-yellow-100 p-3 rounded-lg">
+        <Star className="w-6 h-6 text-yellow-500 mr-2" />
+        <p className="text-emerald-900 font-bold">
+          คะแนนเฉลี่ย:{" "}
+          <span className="text-emerald-700">
+            {selectedPlace?.reviewSummary?.averageStars
+              ? Number.parseFloat(selectedPlace.reviewSummary.averageStars).toFixed(1)
+              : "N/A"}
+          </span>
+        </p>
+      </div>
+    </div>
+  )}
+
 
                   </div>
 
@@ -639,6 +672,29 @@ useEffect(() => {
       />
    
     )}
+     {/* Comments Modal */}
+     {isCommentsModalOpen && (
+        <Dialog
+          as="div"
+          className="relative z-50"
+          open={isCommentsModalOpen}
+          onClose={closeCommentsModal}
+        >
+          <div className="fixed inset-0 bg-black bg-opacity-40" />
+          <div className="fixed inset-0 flex items-center justify-center">
+            <Dialog.Panel className="bg-white p-4 rounded-xl w-full max-w-md shadow-lg">
+              <CommentsSection
+                comments={commentsData.comments}
+                status={commentsData.title.includes("เห็นด้วย") ? "agree" : "disagree"}
+              />
+              {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+<button onClick={closeCommentsModal} className="mt-4 bg-gray-500 text-white px-4 py-2 rounded-lg">
+                ปิด
+              </button>
+            </Dialog.Panel>
+          </div>
+        </Dialog>
+      )}
     </div>
   
   );

@@ -75,7 +75,7 @@ const MapSearch = ({
   
       // ซูมแผนที่ไปยังสถานที่ใกล้ที่สุด
       if (mapRef.current) {
-        mapRef.current.panTo({ lat: parseFloat(latitude), lng: parseFloat(longitude) });
+        mapRef.current.panTo({ lat: Number.parseFloat(latitude), lng: Number.parseFloat(longitude) });
         mapRef.current.setZoom(16); // ซูมระดับ 16
       }
     } else {
@@ -134,6 +134,7 @@ const MapSearch = ({
     );
   }, []);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
       if (selectedPlace) {
         if (!navigator.geolocation) {
@@ -359,6 +360,7 @@ useEffect(() => {
           const lat = Number(place.latitude);
           const lng = Number(place.longitude);
 
+          // biome-ignore lint/suspicious/noGlobalIsNan: <explanation>
           if (isNaN(lat) || isNaN(lng)) {
             console.warn(`Invalid coordinates for place ID: ${place.id}`);
             return null;
@@ -388,6 +390,7 @@ useEffect(() => {
           const lat = Number(place.latitude);
           const lng = Number(place.longitude);
 
+          // biome-ignore lint/suspicious/noGlobalIsNan: <explanation>
           if (isNaN(lat) || isNaN(lng)) {
             console.warn(`Invalid coordinates for place ID: ${place.id}`);
             return null;
@@ -465,7 +468,8 @@ useEffect(() => {
                         {selectedPlace?.ticket_id || "สถานที่ไม่ระบุ"}
                       </h3>
                     </div>
-                    <button
+                    {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+<button
                       onClick={() => onSelectPlace(null)}
                       className="text-emerald-500 hover:text-emerald-700 transition-colors"
                     >
@@ -474,15 +478,37 @@ useEffect(() => {
                   </div>
 
                   {/* Image Section */}
-                  <div className="mb-6 overflow-hidden rounded-xl border-4 border-emerald-100">
-                    <NextImage
-                      src={selectedPlace?.images?.[0]?.image_url || "/icons/location-pin.png"}
-                      alt="สถานที่"
-                      width={600}
-                      height={300}
-                      className="w-full object-cover transition-transform duration-300 hover:scale-105"
-                    />
-                  </div>
+               {/* Image Section */}
+<div className="mb-6 grid grid-cols-2 gap-4">
+  {/* รูปภาพก่อน */}
+  <div className="rounded-xl overflow-hidden border border-emerald-100">
+    <NextImage
+      src={selectedPlace?.images?.[0]?.image_url || "/icons/location-pin.png"} // รูปภาพก่อน
+      alt="รูปภาพก่อน"
+      width={300}
+      height={200}
+      className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+    />
+    <div className="text-center bg-emerald-50 py-2 text-emerald-800 font-semibold">
+      รูปภาพก่อน
+    </div>
+  </div>
+
+  {/* รูปภาพหลัง */}
+  <div className="rounded-xl overflow-hidden border border-emerald-100">
+    <NextImage
+      src={selectedPlace?.images?.[1]?.image_url || "/icons/location-pin.png"} // รูปภาพหลัง
+      alt="รูปภาพหลัง"
+      width={300}
+      height={200}
+      className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+    />
+    <div className="text-center bg-emerald-50 py-2 text-emerald-800 font-semibold">
+      รูปภาพหลัง
+    </div>
+  </div>
+</div>
+
 
                   {/* Details Section */}
                   <div className="space-y-4">
@@ -500,6 +526,18 @@ useEffect(() => {
                         <span className="text-emerald-800">หมายเหตุ: {selectedPlace?.comment || "ไม่มีหมายเหตุ"}</span>
                       </div>
                     </div>
+                  {/* Investigators Section */}
+{selectedPlace?.investigators && selectedPlace.investigators.length > 0 && (
+  <div className="bg-emerald-50 p-5 rounded-xl border border-emerald-200 space-y-4">
+    <h4 className="text-lg font-bold text-emerald-800">รายชื่อผู้ตรวจสอบ</h4>
+    <p className="text-emerald-700">
+      {selectedPlace.investigators.slice(0, 2).join(", ")}
+      {selectedPlace.investigators.length > 2 && (
+        <> + {selectedPlace.investigators.length - 2} คน </>
+      )}
+    </p>
+  </div>
+)}
 
                     {/* Review Summary with Enhanced Green Theme */}
                     {selectedPlace?.reviewSummary && (
@@ -527,7 +565,7 @@ useEffect(() => {
     คะแนนเฉลี่ย:{" "}
     <span className="text-emerald-700">
       {selectedPlace?.reviewSummary?.averageStars
-        ? parseFloat(selectedPlace.reviewSummary.averageStars).toFixed(1)
+        ? Number.parseFloat(selectedPlace.reviewSummary.averageStars).toFixed(1)
         : "N/A"}
     </span>
   </p>
@@ -548,14 +586,16 @@ useEffect(() => {
                       <Navigation className="w-5 h-5" />
                       <span>นำทาง</span>
                     </a>
-                    <button
+                    {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+<button
                       onClick={handleReviewButtonClick}
                       className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center space-x-2 transition-colors"
                     >
                       <ClipboardCheck className="w-5 h-5" />
-                      <span>ตรวจสอบ</span>
+                      <span>โหวต</span>
                       </button>
-                    <button
+                    {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+<button
                       onClick={() => onSelectPlace(null)}
                       className="bg-gray-200 text-emerald-800 px-4 py-2 rounded-lg hover:bg-gray-300 flex items-center space-x-2 transition-colors"
                     >

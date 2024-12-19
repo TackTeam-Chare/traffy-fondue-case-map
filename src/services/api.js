@@ -8,7 +8,8 @@ const api = axios.create({
 export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius = 30000) => {
   try {
     // Make a GET request to the backend endpoint
-    const response = await api.get(`/places/nearby-by-coordinates`, {
+    // biome-ignore lint/style/noUnusedTemplateLiteral: <explanation>
+        const response = await api.get(`/places/nearby-by-coordinates`, {
       params: { lat: latitude, lng: longitude, radius },
     });
 
@@ -23,12 +24,16 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
       organization_action: place.organization_action,
       comment: place.comment,
       coords: place.coords,
-      latitude: parseFloat(place.coords.split(",")[1]), // Parse latitude
-      longitude: parseFloat(place.coords.split(",")[0]), // Parse longitude
+      latitude: Number.parseFloat(place.coords.split(",")[1]), // Parse latitude
+      longitude: Number.parseFloat(place.coords.split(",")[0]), // Parse longitude
       address: place.address || "No address provided",
+      // images: [
+      //   { image_url: place.photo_after || "/icons/location-pin.png" },
+      //   ...(place.photo_after ? [{ image_url: place.photo_after }] : []),
+      // ],
       images: [
-        { image_url: place.photo_after || "/icons/location-pin.png" },
-        ...(place.photo_after ? [{ image_url: place.photo_after }] : []),
+        ...(place.photo ? [{ image_url: place.photo }] : []), // รูปภาพก่อน
+        ...(place.photo_after ? [{ image_url: place.photo_after }] : []), // รูปภาพหลัง
       ],
       star: place.star || 0,
       view_count: place.view_count || 0,
@@ -43,9 +48,10 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
         passCount: place.reviewSummary?.pass_count || 0,
         failCount: place.reviewSummary?.fail_count || 0,
         averageStars: place.reviewSummary?.average_stars
-          ? parseFloat(place.reviewSummary.average_stars) // Ensure it's a float
+          ? Number.parseFloat(place.reviewSummary.average_stars) // Ensure it's a float
           : 0, // Default to 0 if null or invalid
       },
+      investigators: place.investigators || [], 
     }));
   } catch (error) {
     console.error("Error fetching places nearby by coordinates:", error);

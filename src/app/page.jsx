@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import ReviewHistory from "@/components/ReviewHistory";
 import {
   FaMapMarkerAlt,
+  FaCheck 
 } from "react-icons/fa";
 import { Circles } from "react-loader-spinner";
 
@@ -162,8 +163,9 @@ const Home = () => {
 {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 <button
           onClick={() => setIsHistoryOpen(true)}
-          className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
+          className="bg-blue-600 text-white w-full sm:w-auto py-3 px-6 rounded-lg shadow-md hover:bg-green-700 active:scale-95 transition-transform duration-150"
         >
+            <FaCheck  className="inline-block mr-2" />
           ประวัติตรวจย้อนหลัง
         </button>
       </div>

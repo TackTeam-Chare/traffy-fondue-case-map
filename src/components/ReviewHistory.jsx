@@ -24,7 +24,7 @@ const ReviewHistory = ({ userId, isOpen, onClose }) => {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`http://localhost:5000/user/review-history`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/user/review-history`, {
           params: { userId },
         });
         // ตรวจสอบและแปลงข้อมูลให้ตรงกับโครงสร้างที่ต้องการ
@@ -61,7 +61,8 @@ const ReviewHistory = ({ userId, isOpen, onClose }) => {
       <div className="bg-white rounded-lg w-full max-w-2xl md:max-w-lg sm:max-w-sm overflow-hidden shadow-xl">
         <div className="p-4 border-b flex items-center justify-between">
           <h2 className="text-lg font-semibold">ประวัติการตรวจสอบ</h2>
-          <button
+          {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+<button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             aria-label="ปิด"

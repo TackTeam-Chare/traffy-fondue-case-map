@@ -36,9 +36,4 @@ export const getUserProfile = async () => {
   }
 };
 
-export const logout = () => {
-  console.log("Logging out...");
-  liff.logout();
-  localStorage.removeItem("userProfile");
-  console.log("User logged out and profile removed from localStorage");
-};
+

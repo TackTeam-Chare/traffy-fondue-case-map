@@ -19,11 +19,11 @@ import {
   XCircle
 } from "lucide-react";
 import NextImage from "next/image";
-import ReviewModal from "@/components/Map/ReviewModal";
-import CommentsSection  from "@/components/Map/CommentsSection";
+import ReviewModal from "@/components/ReviewModal";
+import CommentsSection  from "@/components/CommentsSection";
 const MapSearch = ({
   isLoaded,
-
+  currentUser,
   mapCenter,
   searchResults,
   nearbyPlaces,
@@ -33,7 +33,7 @@ const MapSearch = ({
 }) => {
   const mapRef = useRef(null);
   const [clickLocation, setClickLocation] = useState(null);
-  const [radius, setRadius] = useState(30000);
+  const [radius, setRadius] = useState(25000);
   const [directions, setDirections] = useState(null);
   const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
   const [currentLegIndex, setCurrentLegIndex] = useState(0);
@@ -44,6 +44,9 @@ const MapSearch = ({
   const [isCommentsModalOpen, setIsCommentsModalOpen] = useState(false); // Comments modal state
   const [commentsData, setCommentsData] = useState({ comments: [], title: "" }); // Selected comments
 
+
+  
+  
   const handleViewComments = (comments, status) => {
     setCommentsData({ comments, status });
     setIsCommentsModalOpen(true);
@@ -66,7 +69,7 @@ const MapSearch = ({
     onSelectPlace(place); // Set the selected place directly
     setIsDialogOpen(true); // Ensure the Dialog opens when a place is selected
   };
-
+  
   const [destinationReached, setDestinationReached] = useState(false);
   // ฟังก์ชันจัดการเมื่อคลิกบนแผนที่
   const handleMapClick = async (event) => {
@@ -300,6 +303,32 @@ useEffect(() => {
     return null; // ถ้ายังโหลด Google Maps API ไม่เสร็จ จะไม่แสดงผลอะไรเลย
   }
 
+  const determineIcon = (place, currentUser) => {
+    // No votes ยังไม่มีใครตรวจ
+    if (place.reviewSummary.totalReviews === 0) {
+      return "/icons/green.png";
+    }
+  
+    // User has voted 
+    if (
+      place.agreeComments.some((comment) => comment.user === currentUser) ||
+      place.disagreeComments.some((comment) => comment.user === currentUser)
+    ) {
+      return "/icons/has-votes.png";
+    }
+  
+    // User has inspected
+    // biome-ignore lint/complexity/useOptionalChain: <explanation>
+          if (place.investigators && place.investigators.includes(currentUser)) {
+      return "/icons/user.png";
+    }
+  
+    // Has votes but user hasn't voted
+    return "/icons/has-votes.png";
+  };
+  
+  
+  
   return (
     <div className="relative h-screen">
       <GoogleMap
@@ -415,8 +444,7 @@ useEffect(() => {
               key={place.id}
               position={{ lat, lng }}
               icon={{
-                url:
-               "/icons/location-pin.png",
+                url: determineIcon(place, currentUser),
                 scaledSize: new window.google.maps.Size(30, 30),
               }}
               animation={

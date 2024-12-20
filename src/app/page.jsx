@@ -1,7 +1,8 @@
+
 "use client";
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-
+import ReviewHistory from "@/components/ReviewHistory";
 import {
   FaMapMarkerAlt,
 } from "react-icons/fa";
@@ -13,7 +14,7 @@ import {
 
 import { useJsApiLoader } from "@react-google-maps/api";
 
-const MapComponent = dynamic(() => import("@/components/Map/Map"), {
+const MapComponent = dynamic(() => import("@/components/Map"), {
   ssr: false
 });
 
@@ -27,12 +28,21 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 });
   const [isClient, setIsClient] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [userId, setUserId] = useState(null);
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY
   });
 
+  useEffect(() => {
+    // Fetch the logged-in user profile from localStorage
+    const storedUserProfile = localStorage.getItem("userProfile");
+    if (storedUserProfile) {
+      const profile = JSON.parse(storedUserProfile);
+      setUserId(profile.userId); // Assuming `userId` is part of the profile
+      console.log('get : userId ')
+    }
+  }, []);
 
   useEffect(() => {
     setIsClient(true); // ตั้งค่าว่าเป็น client-side (เบราว์เซอร์) โดยอัปเดต state
@@ -141,14 +151,21 @@ const Home = () => {
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-6">
+      {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
       <button
   onClick={handleCurrentLocationClick}
   className="bg-green-600 text-white w-full sm:w-auto py-3 px-6 rounded-lg shadow-md hover:bg-green-700 active:scale-95 transition-transform duration-150"
 >
   <FaMapMarkerAlt className="inline-block mr-2" />
   ตำแหน่งของฉัน
-</button>
-
+</button> 
+{/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+<button
+          onClick={() => setIsHistoryOpen(true)}
+          className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
+        >
+          ประวัติตรวจย้อนหลัง
+        </button>
       </div>
 
       {/* Loading Spinner */}
@@ -178,7 +195,12 @@ const Home = () => {
           />
         )}
       </div>
-   
+       {/* ReviewHistory Modal */}
+       <ReviewHistory
+        userId={userId}
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+      />
     </div>
 
   );

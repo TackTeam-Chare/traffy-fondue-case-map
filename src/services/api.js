@@ -5,7 +5,7 @@ const api = axios.create({
 })
 
 // Function to fetch places nearby by coordinates, including review summaries
-export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius = 30000) => {
+export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius = 25000) => {
   try {
     // Make a GET request to the backend endpoint
     // biome-ignore lint/style/noUnusedTemplateLiteral: <explanation>
@@ -18,6 +18,7 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
     // Map and transform the data to include review summaries
     return data.map((place) => ({
       id: place.id,
+      vote_status: place.vote_status, 
       ticket_id: place.ticket_id,
       type: place.type,
       organization: place.organization,

@@ -235,14 +235,15 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
             <p className="text-xs sm:text-sm mt-1 opacity-90">{place?.ticket_id || "Unknown Location"}</p>
             {userProfile && (
               <div className="flex items-center space-x-3 mt-2">
-                <Image
-                  src={userProfile.pictureUrl}
-                  alt={userProfile.displayName}
-                  width={40}
-                  height={40}
-                  unoptimized
-                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow-lg"
-                />
+               <Image
+  src={userProfile?.pictureUrl || 'icons/avatar-vector-icon.jpg'}
+  alt={userProfile?.displayName || 'Unknown User'}
+  width={40}
+  height={40}
+  unoptimized
+  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full shadow-lg"
+/>
+
                 <span className="text-xs sm:text-sm font-semibold truncate">
                   {userProfile.displayName}
                 </span>

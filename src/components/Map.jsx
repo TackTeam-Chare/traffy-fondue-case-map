@@ -414,7 +414,7 @@ useEffect(() => {
               key={place.id}
               position={{ lat: Number(place.latitude), lng: Number(place.longitude) }}
               icon={{
-                url:"/icons/location-pin.png",
+                url:"/icons/green.png",
                 scaledSize: new window.google.maps.Size(30, 30),
               }}
               animation={hoveredMarkerId === place.id ? google.maps.Animation.BOUNCE : null}
@@ -523,7 +523,7 @@ useEffect(() => {
   {/* รูปภาพก่อน */}
   <div className="rounded-xl overflow-hidden border border-emerald-100">
     <NextImage
-      src={selectedPlace?.images?.[0]?.image_url || "/icons/location-pin.png"} // รูปภาพก่อน
+      src={selectedPlace?.images?.[0]?.image_url || "/icons/green.png"} // รูปภาพก่อน
       alt="รูปภาพก่อน"
       width={300}
       height={200}
@@ -537,7 +537,7 @@ useEffect(() => {
   {/* รูปภาพหลัง */}
   <div className="rounded-xl overflow-hidden border border-emerald-100">
     <NextImage
-      src={selectedPlace?.images?.[1]?.image_url || "/icons/location-pin.png"} // รูปภาพหลัง
+      src={selectedPlace?.images?.[1]?.image_url || "/icons/green.png"} // รูปภาพหลัง
       alt="รูปภาพหลัง"
       width={300}
       height={200}

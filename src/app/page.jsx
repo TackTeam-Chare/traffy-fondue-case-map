@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
@@ -14,6 +13,8 @@ import {
 } from "@/services/api";
 
 import { useJsApiLoader } from "@react-google-maps/api";
+import SearchFilter from "@/components/SearchFilter";
+import { searchPlaces } from "@/services/api";
 
 const MapComponent = dynamic(() => import("@/components/Map"), {
   ssr: false
@@ -34,6 +35,19 @@ const Home = () => {
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY
   });
+
+  const handleSearch = async (filters) => {
+    try {
+      const data = await searchPlaces({
+        ...filters,
+        latitude: 13.736717,
+        longitude: 100.523186,
+      });
+      setSearchResults(data);
+    } catch (error) {
+      console.error("Search error:", error);
+    }
+  };
 
   useEffect(() => {
     // Fetch the logged-in user profile from localStorage
@@ -181,7 +195,7 @@ const Home = () => {
           />
         </div>
       )}
-
+         <SearchFilter onSearch={handleSearch} />
       {/* MapComponent Integration */}
       <div className={`w-full h-96 mb-6 ${loading ? "blur-sm" : ""}`}>
         {isClient && (

@@ -71,5 +71,54 @@ export const saveReview = async (formData) => {
   }
 };
 
+export const searchPlaces = async ({ searchTerm, caseType, notInvestigated, finishedDate, latitude, longitude, radius }) => {
+  try {
+    const response = await api.get('/places/search', {
+      params: {
+        searchTerm,
+        caseType,
+        notInvestigated: notInvestigated ? 'true' : 'false',
+        finishedDate,
+        lat: latitude,
+        lng: longitude,
+        radius
+      }
+    });
+
+    const data = Array.isArray(response.data) ? response.data : [];
+    return data.map((place) => ({
+      id: place.id,
+      ticket_id: place.ticket_id,
+      type: place.type,
+      organization: place.organization,
+      comment: place.comment,
+      latitude: Number.parseFloat(place.coords.split(",")[1]),
+      longitude: Number.parseFloat(place.coords.split(",")[0]),
+      address: place.address,
+      state: place.state,
+      star: place.star,
+      timestamp: place.timestamp,
+      timestamp_finished: place.timestamp_finished,
+      images: [
+        ...(place.photo ? [{ image_url: place.photo }] : []),
+        ...(place.photo_after ? [{ image_url: place.photo_after }] : []),
+      ],
+    }));
+  } catch (error) {
+    console.error('Error searching places:', error);
+    throw new Error(error.response?.data?.error || 'Failed to search places');
+  }
+};
 
 
+
+
+export const fetchCategories = async () => {
+  try {
+    const response = await api.get('/categories');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    throw new Error(error.response?.data?.error || 'Failed to fetch categories');
+  }
+};

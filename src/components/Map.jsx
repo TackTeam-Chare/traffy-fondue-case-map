@@ -30,6 +30,7 @@ const MapSearch = ({
   selectedPlace,
   onSelectPlace,
   fetchNearbyPlaces,
+  isSearchActive,
 }) => {
   const mapRef = useRef(null);
   const [clickLocation, setClickLocation] = useState(null);
@@ -474,6 +475,14 @@ useEffect(() => {
           />
         )}
       </GoogleMap>
+      
+       {/* 🔄 สถานะแจ้งผู้ใช้ว่าเป็นเคสใกล้เคียงหรือผลการค้นหา */}
+       <div className="absolute top-4 left-4 bg-white p-2 rounded-md shadow-md">
+        <span className="text-gray-600 text-sm font-medium">
+          {isSearchActive ? "🔍 ผลการค้นหา" : "📍 เคสใกล้เคียง"}
+        </span>
+      </div>
+
    {/* Dialog Modal for Selected Place */}
    {selectedPlace && isDialogOpen && (
       <Transition as={Fragment} show={true}>

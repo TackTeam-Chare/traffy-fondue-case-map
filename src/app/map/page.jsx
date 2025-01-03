@@ -1,28 +1,42 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import ReviewHistory from "@/components/ReviewHistory";
 import { Circles } from "react-loader-spinner";
 import Footer from "@/components/Footer";
-import { fetchPlacesNearbyByCoordinates } from "@/services/api";
+import {
+  fetchPlacesNearbyByCoordinates
+} from "@/services/api";
+
+import { useJsApiLoader } from "@react-google-maps/api";
 import SearchFilter from "@/components/SearchFilter";
 import { searchPlaces } from "@/services/api";
-import CaseList from "@/components/CaseList";
-import ReviewModal from "@/components/ReviewModal";
 
-const Home = () => {
+const MapComponent = dynamic(() => import("@/components/Map"), {
+  ssr: false
+});
+
+const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+const Map = () => {
   const [places, setPlaces] = useState([]); // ข้อมูลที่จะแสดงใน CaseList
   const [userLocation, setUserLocation] = useState(null);
   const [nearbyPlaces, setNearbyPlaces] = useState([]); // ข้อมูลเคสใกล้เคียง
   const [searchResults, setSearchResults] = useState([]); // ข้อมูลการค้นหา
   const [isSearchActive, setIsSearchActive] = useState(false); // ตรวจสอบโหมดการค้นหา
-  const [selectedPlace, setSelectedPlace] = useState(null); // สำหรับแสดง Modal
+  const [selectedPlace, setSelectedPlace] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [mapCenter, setMapCenter] = useState({ lat: 0, lng: 0 });
   const [isClient, setIsClient] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [userId, setUserId] = useState(null);
-
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY
+  });
+  
   const handleOpenHistory = () => {
+    console.log("Opening History Modal");
     setIsHistoryOpen(true);
   };
 
@@ -48,16 +62,19 @@ const Home = () => {
     }
   };
 
+
   useEffect(() => {
+    // Fetch the logged-in user profile from localStorage
     const storedUserProfile = localStorage.getItem("userProfile");
     if (storedUserProfile) {
       const profile = JSON.parse(storedUserProfile);
       setUserId(profile.userId); // Assuming `userId` is part of the profile
+      console.log('get : userId ')
     }
   }, []);
 
   useEffect(() => {
-    setIsClient(true); // ระบุว่าเป็น client-side
+    setIsClient(true); // ตั้งค่าว่าเป็น client-side (เบราว์เซอร์) โดยอัปเดต state
   }, []);
 
   useEffect(() => {
@@ -73,7 +90,7 @@ const Home = () => {
           const nearbyPlacesData = await fetchNearbyPlaces(latitude, longitude);
           setNearbyPlaces(nearbyPlacesData); // ตั้งค่า nearbyPlaces
           setPlaces(nearbyPlacesData); // ใช้ nearbyPlaces เป็นค่าเริ่มต้นของ places
-          setIsSearchActive(false);
+          setIsSearchActive(false); // ระบุว่าไม่ใช่โหมดการค้นหา
           setLoading(false);
         },
         (error) => {
@@ -85,6 +102,7 @@ const Home = () => {
 
     updateLocation();
   }, [isClient]);
+
 
   const fetchNearbyPlaces = async (lat, lng, radius = 25000) => {
     try {
@@ -99,53 +117,69 @@ const Home = () => {
     }
   };
 
+  
   return (
-    <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+<div className="container relative mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      {/* Header */}
+      <div className="text-center m-5">
+        <h1 className="text-2xl font-bold text-green-600">ตรวจสอบตำแหน่งงานที่แก้ไข</h1>
+        <p className="text-gray-500 text-sm">
+       ดูข้อมูลจุดที่แก้ไขปัญหาใกล้คุณ
+        </p>
+      </div>
+
+ 
 
       {/* Loading Spinner */}
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
-          <Circles height="60" width="60" color="#15803d" ariaLabel="loading-indicator" />
+          <Circles
+            height="60"
+            width="60"
+            color="#15803d"
+            ariaLabel="loading-indicator"
+          />
         </div>
       )}
-
-      {/* Search Modal */}
+            {/* Search Modal */}
       <SearchFilter
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         onSearch={handleSearch}
       />
-
-      {/* Case List */}
-      <div className="mt-4">
-        <CaseList
-          cases={isSearchActive ? searchResults : nearbyPlaces} // แยกกรณีค้นหาและเคสใกล้เคียง
-          isSearchActive={isSearchActive}
-          onSelectCase={setSelectedPlace}
-        />
+        {/* MapContainer */}
+        <div
+        className={`flex-1 relative w-full ${loading ? "blur-sm" : ""}`}
+        style={{ height: "calc(100vh - 64px)" }}
+      >
+        {isClient && (
+          <MapComponent
+            isLoaded={isLoaded}
+            userLocation={userLocation}
+            mapCenter={mapCenter}
+            searchResults={searchResults}
+            nearbyPlaces={nearbyPlaces}
+            selectedPlace={selectedPlace}
+            onSelectPlace={setSelectedPlace}
+            fetchNearbyPlaces={fetchNearbyPlaces}
+            isSearchActive={isSearchActive}
+            places={places}
+   
+          />
+        )}
       </div>
 
-      {/* Modal แสดงรายละเอียดเคส */}
-      {selectedPlace && (
-        <ReviewModal
-          isOpen={!!selectedPlace}
-          onClose={() => setSelectedPlace(null)}
-          place={selectedPlace}
-          userLocation={userLocation}
-        />
-      )}
-
-      {/* ReviewHistory Modal */}
-      <ReviewHistory
+       {/* ReviewHistory Modal */}
+       <ReviewHistory
         userId={userId}
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
       />
-
-      {/* Footer */}
+        {/* Footer */}
       <Footer onOpenHistory={handleOpenHistory} onOpenSearch={handleOpenSearch} />
     </div>
+  
   );
 };
 
-export default Home;
+export default Map;

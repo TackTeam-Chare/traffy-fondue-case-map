@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { fetchCategories } from '@/services/api';
+"use client";
+import React, { useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { fetchCategories } from "@/services/api";
+import { Search, Filter, Calendar, Check, XCircle, Loader, ListFilter, Settings2, ChevronDown } from "lucide-react";
 
-const SearchFilter = ({ onSearch }) => {
+const SearchFilter = ({ onSearch, isOpen, onClose }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [caseType, setCaseType] = useState("");
   const [notInvestigated, setNotInvestigated] = useState(false);
   const [finishedDate, setFinishedDate] = useState("");
-  const [isOpen, setIsOpen] = useState(true);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -18,7 +19,7 @@ const SearchFilter = ({ onSearch }) => {
         const data = await fetchCategories();
         setCategories(data);
       } catch (error) {
-        console.error('Failed to load categories:', error);
+        console.error("Failed to load categories:", error);
       } finally {
         setIsLoading(false);
       }
@@ -28,7 +29,8 @@ const SearchFilter = ({ onSearch }) => {
   }, []);
 
   const handleSearch = () => {
-    onSearch({ searchTerm, caseType,  notInvestigated: !notInvestigated, finishedDate });
+    onSearch({ searchTerm, caseType, notInvestigated: !notInvestigated, finishedDate });
+    onClose(); // ปิด Modal หลังจากค้นหา
   };
 
   const handleReset = () => {
@@ -37,194 +39,139 @@ const SearchFilter = ({ onSearch }) => {
     setNotInvestigated(false);
     setFinishedDate("");
     onSearch({ searchTerm: "", caseType: "", notInvestigated: false, finishedDate: "" });
+    onClose();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-3">
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
-        {/* Elegant Header */}
-        {/* biome-ignore lint/a11y/useKeyWithClickEvents: <explanation> */}
-<div 
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-between p-5 bg-gradient-to-r from-emerald-600 to-teal-600 cursor-pointer hover:from-emerald-700 hover:to-teal-700 transition-all duration-300"
-        >
-          <div className="flex items-center space-x-3">
-            <div className="bg-white/20 p-2 rounded-lg">
-              {/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
-<svg 
-                className="w-5 h-5 text-white"
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
-                />
-              </svg>
-            </div>
-            <h2 className="text-xl font-semibold text-white">ระบบค้นหาและกรองข้อมูล</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md px-4">
+      <motion.div
+        initial={{ y: "100%", opacity: 0 }}
+        animate={{ y: "0%", opacity: 1 }}
+        exit={{ y: "100%", opacity: 0 }}
+        transition={{ type: "spring", stiffness: 100, damping: 20 }}
+        className="w-full max-w-lg bg-white rounded-t-3xl shadow-xl overflow-hidden"
+      >
+        {/* Header */}
+        <div className="p-4 bg-gradient-to-r from-green-700 to-green-600 text-white flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Filter className="w-5 h-5" />
+            <h2 className="text-lg font-semibold">ระบบค้นหาและกรองข้อมูล</h2>
           </div>
-          <motion.div
-            animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={{ duration: 0.3 }}
-            className="bg-white/20 p-2 rounded-lg"
-          >
-            {/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
-<svg 
-              className="w-5 h-5 text-white"
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M19 9l-7 7-7-7" 
-              />
-            </svg>
-          </motion.div>
+          {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+<button onClick={onClose} className="hover:text-gray-300 transition-all">
+            <XCircle className="w-6 h-6" />
+          </button>
         </div>
 
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
+        {/* Content */}
+        <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
+          {/* Search Input */}
+          <div className="flex flex-col gap-2">
+            {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
+<label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <Search className="w-5 h-5 text-green-600" />
+              คำค้นหา
+            </label>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="พิมพ์เพื่อค้นหา..."
+              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-600 hover:border-green-400 transition-all"
+            />
+          </div>
+
+          {/* Category Select */}
+          <div className="flex flex-col gap-2">
+            {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
+<label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <ListFilter className="w-5 h-5 text-green-600" />
+              ประเภทเคส
+            </label>
+            <select
+              value={caseType}
+              onChange={(e) => setCaseType(e.target.value)}
+              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-600 hover:border-green-400 transition-all"
             >
-              <div className="p-6 space-y-6 bg-gradient-to-b from-gray-50 to-white">
-                {/* Search Input */}
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    {/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
-<svg 
-                      className="h-5 w-5 text-gray-400 group-hover:text-emerald-500 transition-colors duration-200"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                  </div>
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="ค้นหาเคส..."
-                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 placeholder-gray-400 hover:border-emerald-500"
-                  />
-                </div>
+              <option value="">ทุกประเภท</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-                {/* Category Select */}
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    {/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
-<svg 
-                      className="h-5 w-5 text-gray-400 group-hover:text-emerald-500 transition-colors duration-200"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7"/>
-                    </svg>
-                  </div>
-                  <select
-                    value={caseType}
-                    onChange={(e) => setCaseType(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-emerald-500 bg-white appearance-none cursor-pointer"
-                  >
-                    <option value="">ทุกประเภท</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.name}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
-                    {/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
-<svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7"/>
-                    </svg>
-                  </div>
-                </div>
+          {/* Checkbox */}
+          <div className="flex items-center gap-2 bg-green-50 p-3 rounded-lg border border-green-200">
+            <input
+              type="checkbox"
+              id="notInvestigated"
+              checked={notInvestigated}
+              onChange={() => setNotInvestigated((prev) => !prev)}
+              className="w-5 h-5 text-green-600 focus:ring-green-600"
+            />
+            <label htmlFor="notInvestigated" className="text-sm text-gray-700 flex items-center gap-2">
+              {notInvestigated ? (
+                <>
+                  <Check className="w-5 h-5 text-green-600" />
+                  แสดงเฉพาะเคสที่ยังไม่ตรวจสอบ
+                </>
+              ) : (
+                <>
+                  <Settings2 className="w-5 h-5 text-gray-500" />
+                  แสดงเฉพาะเคสที่ตรวจสอบแล้ว
+                </>
+              )}
+            </label>
+          </div>
 
-                {/* Filters Row */}
-                <div className="flex flex-col md:flex-row gap-6">
-                  {/* Checkbox */}
-<div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="notInvestigated"
-                    checked={notInvestigated}
-                    onChange={() => setNotInvestigated((prev) => !prev)}
-                    className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500 transition-colors duration-200"
-                  />
-                  <label htmlFor="notInvestigated" className="text-sm text-gray-700 cursor-pointer">
-                    {notInvestigated
-                    ? "แสดงเฉพาะเคสที่ยังไม่ตรวจสอบ"
-                      : "แสดงเฉพาะเคสที่ตรวจสอบแล้ว"}
-                      </label>
-                </div>
+          {/* Date Input */}
+          <div className="flex flex-col gap-2">
+            {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
+<label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-green-600" />
+              วันที่เสร็จสิ้น
+            </label>
+            <input
+              type="date"
+              value={finishedDate}
+              onChange={(e) => setFinishedDate(e.target.value)}
+              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-600 hover:border-green-400 transition-all"
+            />
+          </div>
+        </div>
 
-
-
-                  {/* Date Input */}
-                  <div className="relative group md:w-1/2">
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                      {/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
-                        <svg 
-                        className="h-5 w-5 text-gray-400 group-hover:text-emerald-500 transition-colors duration-200"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                      </svg>
-                    </div>
-                    <input
-                      type="date"
-                      value={finishedDate}
-                      onChange={(e) => setFinishedDate(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200 hover:border-emerald-500"
-                    />
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                  {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+        {/* Action Buttons */}
+        <div className="p-4 flex flex-col sm:flex-row gap-2 border-t bg-green-50">
+          {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 <button
-                    onClick={handleSearch}
-                    className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-6 py-3 rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 shadow-lg shadow-emerald-100 hover:shadow-emerald-200"
-                  >
-                    {/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
-<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                    </svg>
-                    <span>ค้นหา</span>
-                  </button>
-                  {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+            onClick={handleSearch}
+            className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-all flex items-center justify-center gap-2"
+          >
+            <Search className="w-5 h-5" />
+            ค้นหา
+          </button>
+          {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 <button
-                    onClick={handleReset}
-                    className="flex-1 border-2 border-gray-200 hover:border-gray-300 bg-white text-gray-700 px-6 py-3 rounded-xl font-medium transition-all duration-200 flex items-center justify-center space-x-2 hover:bg-gray-50"
-                  >
-                    {/* biome-ignore lint/a11y/noSvgWithoutTitle: <explanation> */}
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-                    </svg>
-                    <span>รีเซ็ต</span>
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+            onClick={handleReset}
+            className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
+          >
+            <XCircle className="w-5 h-5 text-gray-500" />
+            รีเซ็ต
+          </button>
+        </div>
+
+        {/* Loading State */}
+        {isLoading && (
+          <div className="p-4 text-center text-green-600 flex items-center justify-center gap-2">
+            <Loader className="w-5 h-5 animate-spin" />
+            กำลังโหลดข้อมูล...
+          </div>
+        )}
+      </motion.div>
     </div>
   );
 };

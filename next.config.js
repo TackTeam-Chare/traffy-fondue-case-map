@@ -15,4 +15,13 @@ module.exports = {
     ],
     unoptimized: true,
   },
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '5000',
+        pathname: '/uploads/**',
+      },
+    ],
+
 };

@@ -10,6 +10,7 @@ import CaseList from "@/components/CaseList";
 import ReviewModal from "@/components/ReviewModal";
 
 const Home = () => {
+  
   const [places, setPlaces] = useState([]); // ข้อมูลที่จะแสดงใน CaseList
   const [userLocation, setUserLocation] = useState(null);
   const [nearbyPlaces, setNearbyPlaces] = useState([]); // ข้อมูลเคสใกล้เคียง

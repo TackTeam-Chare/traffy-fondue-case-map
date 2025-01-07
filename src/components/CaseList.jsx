@@ -68,7 +68,8 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
         ) : (
           <div className="space-y-4">
             {cases.map((caseItem) => (
-              <div
+              // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+<div
                 key={caseItem.id}
                 onClick={() => onSelectCase(caseItem)}
                 className="group p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition-all duration-200 cursor-pointer hover:shadow-md"
@@ -90,6 +91,7 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
                     <div className="grid grid-cols-2 gap-2 mt-2 mb-2 p-2">
                       {caseItem.images.slice(0, 2).map((img, index) => (
                         <div
+                          // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
                           key={index}
                           className="relative aspect-video rounded-lg overflow-hidden bg-gray-100"
                         >
@@ -138,34 +140,54 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
                   </div>
                 )}
 
-                {/* Review Summary */}
-                {caseItem.reviewSummary && (
-                  <div className="mt-3 space-y-1 text-sm text-gray-600">
-                    <p>
-                      <Check className="inline w-4 h-4 text-green-500" /> เห็นด้วย: {caseItem.reviewSummary.passCount || 0}
-                    </p>
-                    <p>
-                      <XCircle className="inline w-4 h-4 text-red-500" /> ไม่เห็นด้วย: {caseItem.reviewSummary.failCount || 0}
-                    </p>
-                    <p>
-                      <Star className="inline w-4 h-4 text-yellow-400" /> คะแนนเฉลี่ย:{" "}
-                      {caseItem.reviewSummary.averageStars
-                        ? Number.parseFloat(caseItem.reviewSummary.averageStars).toFixed(1)
-                        : "N/A"}
-                    </p>
-                  </div>
-                )}
+{/* Review Summary */}
+{caseItem.reviewSummary && (
+  <>
+    {Boolean(caseItem.reviewSummary.passCount) ||
+    Boolean(caseItem.reviewSummary.failCount) ||
+    Boolean(caseItem.reviewSummary.averageStars) ? (
+      <div className="mt-3 space-y-1 text-sm text-gray-600">
+        {/* แสดงเฉพาะเมื่อมี passCount และไม่เป็น 0 */}
+        {caseItem.reviewSummary.passCount > 0 && (
+          <p>
+            <Check className="inline w-4 h-4 text-green-500" /> เห็นด้วย:{" "}
+            {caseItem.reviewSummary.passCount}
+          </p>
+        )}
+
+        {/* แสดงเฉพาะเมื่อมี failCount และไม่เป็น 0 */}
+        {caseItem.reviewSummary.failCount > 0 && (
+          <p>
+            <XCircle className="inline w-4 h-4 text-red-500" /> ไม่เห็นด้วย:{" "}
+            {caseItem.reviewSummary.failCount}
+          </p>
+        )}
+
+        {/* แสดงเฉพาะเมื่อมี averageStars และไม่เป็น 0 */}
+        {caseItem.reviewSummary.averageStars > 0 && (
+          <p>
+            <Star className="inline w-4 h-4 text-yellow-400" /> คะแนนเฉลี่ย:{" "}
+            {Number.parseFloat(caseItem.reviewSummary.averageStars).toFixed(1)}
+          </p>
+        )}
+      </div>
+    ) : null}
+  </>
+)}
+
 
                 {/* Buttons ชิดขวา */}
                 <div className="flex gap-2 mt-4 justify-end">
-                  <button
+                  {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+<button
                     onClick={(e) => handleReviewClick(caseItem, e)}
                     className="flex items-center px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
                   >
                     <Edit className="w-4 h-4 mr-1" />
                     รีวิว
                   </button>
-                  <button
+                  {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+<button
                     onClick={(e) => handleNavigateClick(caseItem, e)}
                     className="flex items-center px-3 py-1 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
                   >

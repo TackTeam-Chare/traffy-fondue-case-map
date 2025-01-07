@@ -18,6 +18,7 @@ const MapComponent = dynamic(() => import("@/components/Map"), {
 
 const GOOGLE_MAPS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
+// biome-ignore lint/suspicious/noShadowRestrictedNames: <explanation>
 const Map = () => {
   const [places, setPlaces] = useState([]); // ข้อมูลที่จะแสดงใน CaseList
   const [userLocation, setUserLocation] = useState(null);

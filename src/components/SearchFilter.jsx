@@ -2,7 +2,16 @@
 import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { fetchCategories } from "@/services/api";
-import { Search, Filter, Calendar, Check, XCircle, Loader, ListFilter, Settings2, ChevronDown } from "lucide-react";
+import {
+  Search,
+  Filter,
+  Calendar,
+  Check,
+  XCircle,
+  Loader,
+  ListFilter,
+  Settings2,
+} from "lucide-react";
 
 const SearchFilter = ({ onSearch, isOpen, onClose }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -29,7 +38,12 @@ const SearchFilter = ({ onSearch, isOpen, onClose }) => {
   }, []);
 
   const handleSearch = () => {
-    onSearch({ searchTerm, caseType, notInvestigated: !notInvestigated, finishedDate });
+    onSearch({
+      searchTerm,
+      caseType,
+      notInvestigated: !notInvestigated,
+      finishedDate,
+    });
     onClose(); // ปิด Modal หลังจากค้นหา
   };
 
@@ -59,18 +73,16 @@ const SearchFilter = ({ onSearch, isOpen, onClose }) => {
             <Filter className="w-5 h-5" />
             <h2 className="text-lg font-semibold">ระบบค้นหาและกรองข้อมูล</h2>
           </div>
-          {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-<button onClick={onClose} className="hover:text-gray-300 transition-all">
+          <button onClick={onClose} className="hover:text-gray-300 transition-all">
             <XCircle className="w-6 h-6" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="p-4 space-y-4 max-h-[60vh] overflow-y-auto">
           {/* Search Input */}
           <div className="flex flex-col gap-2">
-            {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
-<label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
               <Search className="w-5 h-5 text-green-600" />
               คำค้นหา
             </label>
@@ -84,24 +96,25 @@ const SearchFilter = ({ onSearch, isOpen, onClose }) => {
           </div>
 
           {/* Category Select */}
-          <div className="flex flex-col gap-2">
-            {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
-<label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+          <div className="flex flex-col gap-2 relative">
+            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
               <ListFilter className="w-5 h-5 text-green-600" />
               ประเภทเคส
             </label>
-            <select
-              value={caseType}
-              onChange={(e) => setCaseType(e.target.value)}
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-600 hover:border-green-400 transition-all"
-            >
-              <option value="">ทุกประเภท</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.name}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={caseType}
+                onChange={(e) => setCaseType(e.target.value)}
+                className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-green-600 hover:border-green-400 transition-all max-h-[200px] overflow-y-auto"
+              >
+                <option value="">ทุกประเภท</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.name}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Checkbox */}
@@ -113,7 +126,10 @@ const SearchFilter = ({ onSearch, isOpen, onClose }) => {
               onChange={() => setNotInvestigated((prev) => !prev)}
               className="w-5 h-5 text-green-600 focus:ring-green-600"
             />
-            <label htmlFor="notInvestigated" className="text-sm text-gray-700 flex items-center gap-2">
+            <label
+              htmlFor="notInvestigated"
+              className="text-sm text-gray-700 flex items-center gap-2"
+            >
               {notInvestigated ? (
                 <>
                   <Check className="w-5 h-5 text-green-600" />
@@ -130,8 +146,7 @@ const SearchFilter = ({ onSearch, isOpen, onClose }) => {
 
           {/* Date Input */}
           <div className="flex flex-col gap-2">
-            {/* biome-ignore lint/a11y/noLabelWithoutControl: <explanation> */}
-<label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-green-600" />
               วันที่เสร็จสิ้น
             </label>
@@ -146,16 +161,14 @@ const SearchFilter = ({ onSearch, isOpen, onClose }) => {
 
         {/* Action Buttons */}
         <div className="p-4 flex flex-col sm:flex-row gap-2 border-t bg-green-50">
-          {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-<button
+          <button
             onClick={handleSearch}
             className="flex-1 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-all flex items-center justify-center gap-2"
           >
             <Search className="w-5 h-5" />
             ค้นหา
           </button>
-          {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-<button
+          <button
             onClick={handleReset}
             className="flex-1 border border-gray-300 py-2 rounded-lg hover:bg-gray-100 transition-all flex items-center justify-center gap-2"
           >
@@ -163,14 +176,6 @@ const SearchFilter = ({ onSearch, isOpen, onClose }) => {
             รีเซ็ต
           </button>
         </div>
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="p-4 text-center text-green-600 flex items-center justify-center gap-2">
-            <Loader className="w-5 h-5 animate-spin" />
-            กำลังโหลดข้อมูล...
-          </div>
-        )}
       </motion.div>
     </div>
   );

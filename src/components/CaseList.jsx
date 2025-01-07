@@ -12,6 +12,10 @@ import {
   Navigation,
   Edit,
   Users,
+  ThumbsUp,
+  ThumbsDown,
+  Eye,
+  CalendarDays
 } from "lucide-react";
 import NextImage from "next/image";
 import ReviewModal from "@/components/ReviewModal";
@@ -80,9 +84,34 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
                     <span className="px-3 py-1 text-sm bg-emerald-50 text-emerald-700 rounded-full font-medium">
                       {caseItem.ticket_id || "ไม่ระบุ ID"}
                     </span>
-                    <span className="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-full">
-                      {new Date().toLocaleDateString("th-TH")}
-                    </span>
+                      {/* Date with Calendar Icon */}
+    <div className="flex items-center gap-1 text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+      <CalendarDays className="w-4 h-4 text-blue-500" />
+      <span className="text-sm font-medium">
+      {new Date().toLocaleDateString("th-TH")}
+      </span>
+    </div>
+               
+                         {/* Star */}
+                         <div className="flex items-center gap-1">
+                      <Star className="w-4 h-4 text-yellow-400" />
+                      <span className="text-sm font-medium">{caseItem.star || "0"}</span>
+                    </div>
+                    {/* Likes */}
+                    <div className="flex items-center gap-1">
+                      <ThumbsUp className="w-4 h-4 text-green-500" />
+                      <span className="text-sm font-medium">{caseItem.likes || "0"}</span>
+                    </div>
+                    {/* Dislikes */}
+                    <div className="flex items-center gap-1">
+                      <ThumbsDown className="w-4 h-4 text-red-500" />
+                      <span className="text-sm font-medium">{caseItem.dislikes || "0"}</span>
+                    </div>
+                    {/* Views */}
+                    <div className="flex items-center gap-1">
+                      <Eye className="w-4 h-4 text-blue-500" />
+                      <span className="text-sm font-medium">{caseItem.view_count || "0"}</span>
+                    </div>
                   </div>
                   <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-emerald-500 transition-colors" />
                 </div>
@@ -116,11 +145,6 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
                     <div className="flex items-center gap-2 text-gray-700">
                       <Building className="w-4 h-4 text-emerald-500" />
                       <span className="text-sm">{caseItem.organization || "ไม่ระบุหน่วยงาน"}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Star className="w-4 h-4 text-yellow-400" />
-                      <span className="text-sm font-medium">{caseItem.star || "0"}</span>
-                      <span className="text-sm text-gray-500">คะแนน</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <MessageCircle className="w-4 h-4 text-emerald-500" />

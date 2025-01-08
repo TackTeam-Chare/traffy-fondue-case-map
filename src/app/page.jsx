@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import ReviewHistory from "@/components/ReviewHistory";
-import { Circles } from "react-loader-spinner";
 import Footer from "@/components/Footer";
 import { fetchPlacesNearbyByCoordinates } from "@/services/api";
 import SearchFilter from "@/components/SearchFilter";
@@ -17,7 +16,6 @@ const Home = () => {
   const [searchResults, setSearchResults] = useState([]); // ข้อมูลการค้นหา
   const [isSearchActive, setIsSearchActive] = useState(false); // ตรวจสอบโหมดการค้นหา
   const [selectedPlace, setSelectedPlace] = useState(null); // สำหรับแสดง Modal
-  const [loading, setLoading] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -33,7 +31,6 @@ const Home = () => {
 
   const handleSearch = async (filters) => {
     try {
-      setLoading(true);
       const data = await searchPlaces({
         ...filters,
         latitude: userLocation?.lat,
@@ -44,9 +41,7 @@ const Home = () => {
       setIsSearchActive(true); // ระบุว่าอยู่ในโหมดการค้นหา
     } catch (error) {
       console.error("Search error:", error);
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
 
   useEffect(() => {
@@ -65,7 +60,6 @@ const Home = () => {
     if (!isClient) return;
 
     const updateLocation = () => {
-      setLoading(true);
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           const { latitude, longitude } = position.coords;
@@ -75,11 +69,9 @@ const Home = () => {
           setNearbyPlaces(nearbyPlacesData); // ตั้งค่า nearbyPlaces
           setPlaces(nearbyPlacesData); // ใช้ nearbyPlaces เป็นค่าเริ่มต้นของ places
           setIsSearchActive(false);
-          setLoading(false);
         },
         (error) => {
           console.error("Error getting user's location:", error);
-          setLoading(false);
         }
       );
     };
@@ -89,26 +81,16 @@ const Home = () => {
 
   const fetchNearbyPlaces = async (lat, lng, radius = 25000) => {
     try {
-      setLoading(true);
       const data = await fetchPlacesNearbyByCoordinates(lat, lng, radius);
       return data;
     } catch (error) {
       console.error("Error fetching nearby places:", error);
       return [];
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
     <div className="container relative mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-
-      {/* Loading Spinner */}
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
-          <Circles height="60" width="60" color="#15803d" ariaLabel="loading-indicator" />
-        </div>
-      )}
 
       {/* Search Modal */}
       <SearchFilter

@@ -17,7 +17,6 @@ import {
   ThumbsUp,
   ThumbsDown,
   Timer,
-  Activity,
   Calendar,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -111,29 +110,26 @@ const formatDuration = (minutes) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
+      className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
     >
       <motion.div
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
-        className="bg-white w-full sm:max-w-3xl sm:rounded-2xl overflow-hidden shadow-2xl h-[90vh] sm:h-[85vh]"
+        className="bg-white w-full sm:max-w-4xl rounded-2xl shadow-lg max-h-[90vh] overflow-hidden flex flex-col"
       >
-         {/* Header */}
-         <div className="sticky top-0 z-10 bg-emerald-800/90backdrop-blur-md px-4 py-3 border-b flex items-center justify-between text-white">
-            <div className="flex items-center gap-3">
-              <Activity className="w-6 h-6" />
-              <h2 className="text-xl font-semibold">ประวัติการตรวจสอบ</h2>
-            </div>
-            {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-<button
-              onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-full transition-all duration-200"
-              aria-label="ปิด"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
+        {/* Header */}
+        <div className="sticky top-0 z-10 bg-emerald-800 text-white px-4 py-3 flex justify-between items-center">
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <Star className="w-5 h-5" />
+            ประวัติการตรวจสอบ
+          </h2>
+          {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+<button onClick={onClose} className="hover:bg-white/10 p-2 rounded-full">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+       
           {/* Content */}
           <div className="overflow-y-auto" style={{ height: "calc(90vh - 57px)" }}>
             {loading ? (

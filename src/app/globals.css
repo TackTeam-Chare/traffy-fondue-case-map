@@ -22,10 +22,11 @@ footer {
   max-height: 60vh;
   overflow-y: auto;
 }
-footer {
-  z-index: 1000;
-}
 
+
+.footer {
+  z-index: 100;
+}
 
 .container {
   overflow: hidden;

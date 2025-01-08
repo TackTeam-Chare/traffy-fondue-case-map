@@ -24,16 +24,14 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
 
-  // เปิด Modal รีวิว
   const handleReviewClick = (caseItem, e) => {
-    e.stopPropagation(); // ป้องกัน onSelectCase ถูกเรียก
+    e.stopPropagation();
     setSelectedCase(caseItem);
     setIsReviewOpen(true);
   };
 
-  // เปิด Google Maps
   const handleNavigateClick = (caseItem, e) => {
-    e.stopPropagation(); // ป้องกัน onSelectCase ถูกเรียก
+    e.stopPropagation();
     if (caseItem.latitude && caseItem.longitude) {
       const url = `https://www.google.com/maps/dir/?api=1&destination=${caseItem.latitude},${caseItem.longitude}`;
       window.open(url, "_blank");
@@ -43,15 +41,15 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
   };
 
   return (
-    <div className="mt-6 bg-white rounded-xl border border-gray-200 shadow-sm">
+    <div className="mt-4 sm:mt-6 bg-white rounded-xl border border-gray-200 shadow-sm">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
+      <div className="p-3 sm:p-4 border-b border-gray-200">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-emerald-100 rounded-lg">
               <MapPin className="w-5 h-5 text-emerald-600" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-800">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
               {isSearchActive ? "ผลการค้นหา" : "เคสใกล้เคียง"}
             </h2>
           </div>
@@ -62,7 +60,7 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
       </div>
 
       {/* Content */}
-      <div className="p-4 overflow-y-auto max-h-[60vh]">
+      <div className="p-3 sm:p-4 overflow-y-auto max-h-[60vh]">
         {cases.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-gray-500">
             <MapPin className="w-12 h-12 mb-3 text-gray-300" />
@@ -72,90 +70,90 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
         ) : (
           <div className="space-y-4">
             {cases.map((caseItem) => (
-              // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
-<div
+              <div
                 key={caseItem.id}
                 onClick={() => onSelectCase(caseItem)}
-                className="group p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition-all duration-200 cursor-pointer hover:shadow-md"
+                className="group p-3 sm:p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition-all duration-200 cursor-pointer hover:shadow-md"
               >
-                {/* Header */}
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-2">
+                {/* Header with Stats */}
+                <div className="flex flex-col sm:flex-row gap-3 mb-3">
+                  {/* Left Section: ID, Date, and Average Rating */}
+                  <div className="flex flex-wrap items-center gap-2">
                     <span className="px-3 py-1 text-sm bg-emerald-50 text-emerald-700 rounded-full font-medium">
                       {caseItem.ticket_id || "ไม่ระบุ ID"}
                     </span>
-                      {/* Date with Calendar Icon */}
-    <div className="flex items-center gap-1 text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-      <CalendarDays className="w-4 h-4 text-blue-500" />
-      <span className="text-sm font-medium">
-      {new Date().toLocaleDateString("th-TH")}
-      </span>
-    </div>
-               
-                         {/* Star */}
-                         <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 text-yellow-400" />
-                      <span className="text-sm font-medium">{caseItem.star || "0"}</span>
+                    <div className="flex items-center gap-1 text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                      <CalendarDays className="w-4 h-4 text-blue-500" />
+                      <span className="text-sm font-medium">
+                        {new Date().toLocaleDateString("th-TH")}
+                      </span>
                     </div>
-                    {/* Likes */}
-                    <div className="flex items-center gap-1">
-                      <ThumbsUp className="w-4 h-4 text-green-500" />
-                      <span className="text-sm font-medium">{caseItem.likes || "0"}</span>
-                    </div>
-                    {/* Dislikes */}
-                    <div className="flex items-center gap-1">
-                      <ThumbsDown className="w-4 h-4 text-red-500" />
-                      <span className="text-sm font-medium">{caseItem.dislikes || "0"}</span>
-                    </div>
-                    {/* Views */}
-                    <div className="flex items-center gap-1">
-                      <Eye className="w-4 h-4 text-blue-500" />
-                      <span className="text-sm font-medium">{caseItem.view_count || "0"}</span>
-                    </div>
+                    {caseItem.reviewSummary?.averageStars > 0 && (
+                      <div className="flex items-center gap-1 px-3 py-1 bg-yellow-50 text-yellow-700 rounded-full">
+                        <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
+                        <span className="text-sm font-medium">
+                          {Number.parseFloat(caseItem.reviewSummary.averageStars).toFixed(1)}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-emerald-500 transition-colors" />
-                </div>
-                    {/* Images */}
-                    {caseItem.images?.length > 0 && (
-                    <div className="grid grid-cols-2 gap-2 mt-2 mb-2 p-2">
-                      {caseItem.images.slice(0, 2).map((img, index) => (
-                        <div
-                          // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                          key={index}
-                          className="relative aspect-video rounded-lg overflow-hidden bg-gray-100"
-                        >
-                          <NextImage
-                            src={img.image_url || "/icons/placeholder.png"}
-                            alt={`รูปภาพเคส ${index + 1}`}
-                            layout="fill"
-                            className="object-cover"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                {/* Details */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Tag className="w-4 h-4 text-emerald-500" />
-                      <span className="text-sm">{caseItem.type || "ไม่ระบุประเภท"}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Building className="w-4 h-4 text-emerald-500" />
-                      <span className="text-sm">{caseItem.organization || "ไม่ระบุหน่วยงาน"}</span>
-                    </div>
+
+                  {/* Right Section: Engagement Stats */}
+                  <div className="flex items-center gap-3 ml-auto">
                     <div className="flex items-center gap-2">
-                      <MessageCircle className="w-4 h-4 text-emerald-500" />
-                      <span className="text-sm">{caseItem.comment || "ไม่มีหมายเหตุ"}</span>
+                      <div className="flex items-center gap-1">
+                        <ThumbsUp className="w-4 h-4 text-green-500" />
+                        <span className="text-sm">{caseItem.likes || "0"}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <ThumbsDown className="w-4 h-4 text-red-500" />
+                        <span className="text-sm">{caseItem.dislikes || "0"}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Eye className="w-4 h-4 text-blue-500" />
+                        <span className="text-sm">{caseItem.view_count || "0"}</span>
+                      </div>
                     </div>
+                    <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-emerald-500 transition-colors" />
                   </div>
-
-              
                 </div>
 
-                {/* รายชื่อผู้ตรวจสอบ */}
+                {/* Images */}
+                {caseItem.images?.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2 mb-2">
+                    {caseItem.images.slice(0, 2).map((img, index) => (
+                      <div
+                        key={index}
+                        className="relative aspect-video rounded-lg overflow-hidden bg-gray-100"
+                      >
+                        <NextImage
+                          src={img.image_url || "/icons/placeholder.png"}
+                          alt={`รูปภาพเคส ${index + 1}`}
+                          layout="fill"
+                          className="object-cover"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Details */}
+                <div className="space-y-2 mt-3">
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Tag className="w-4 h-4 text-emerald-500" />
+                    <span className="text-sm">{caseItem.type || "ไม่ระบุประเภท"}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <Building className="w-4 h-4 text-emerald-500" />
+                    <span className="text-sm">{caseItem.organization || "ไม่ระบุหน่วยงาน"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-emerald-500" />
+                    <span className="text-sm">{caseItem.comment || "ไม่มีหมายเหตุ"}</span>
+                  </div>
+                </div>
+
+                {/* Investigators */}
                 {caseItem.investigators?.length > 0 && (
                   <div className="mt-3 text-sm text-gray-600">
                     <Users className="inline w-4 h-4 text-emerald-500 mr-1" />
@@ -164,56 +162,36 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
                   </div>
                 )}
 
-{/* Review Summary */}
-{caseItem.reviewSummary && (
-  <>
-    {Boolean(caseItem.reviewSummary.passCount) ||
-    Boolean(caseItem.reviewSummary.failCount) ||
-    Boolean(caseItem.reviewSummary.averageStars) ? (
-      <div className="mt-3 space-y-1 text-sm text-gray-600">
-        {/* แสดงเฉพาะเมื่อมี passCount และไม่เป็น 0 */}
-        {caseItem.reviewSummary.passCount > 0 && (
-          <p>
-            <Check className="inline w-4 h-4 text-green-500" /> เห็นด้วย:{" "}
-            {caseItem.reviewSummary.passCount}
-          </p>
-        )}
+                {/* Review Summary */}
+                {caseItem.reviewSummary && (
+                  <div className="mt-3 flex flex-wrap gap-3 text-sm">
+                    {caseItem.reviewSummary.passCount > 0 && (
+                      <span className="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded-full">
+                        <Check className="w-4 h-4" />
+                        เห็นด้วย: {caseItem.reviewSummary.passCount}
+                      </span>
+                    )}
+                    {caseItem.reviewSummary.failCount > 0 && (
+                      <span className="flex items-center gap-1 px-2 py-1 bg-red-50 text-red-700 rounded-full">
+                        <XCircle className="w-4 h-4" />
+                        ไม่เห็นด้วย: {caseItem.reviewSummary.failCount}
+                      </span>
+                    )}
+                  </div>
+                )}
 
-        {/* แสดงเฉพาะเมื่อมี failCount และไม่เป็น 0 */}
-        {caseItem.reviewSummary.failCount > 0 && (
-          <p>
-            <XCircle className="inline w-4 h-4 text-red-500" /> ไม่เห็นด้วย:{" "}
-            {caseItem.reviewSummary.failCount}
-          </p>
-        )}
-
-        {/* แสดงเฉพาะเมื่อมี averageStars และไม่เป็น 0 */}
-        {caseItem.reviewSummary.averageStars > 0 && (
-          <p>
-            <Star className="inline w-4 h-4 text-yellow-400" /> คะแนนเฉลี่ย:{" "}
-            {Number.parseFloat(caseItem.reviewSummary.averageStars).toFixed(1)}
-          </p>
-        )}
-      </div>
-    ) : null}
-  </>
-)}
-
-
-                {/* Buttons ชิดขวา */}
+                {/* Action Buttons */}
                 <div className="flex gap-2 mt-4 justify-end">
-                  {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-<button
+                  <button
                     onClick={(e) => handleReviewClick(caseItem, e)}
-                    className="flex items-center px-3 py-1 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                    className="flex items-center px-3 py-1.5 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
                   >
                     <Edit className="w-4 h-4 mr-1" />
                     รีวิว
                   </button>
-                  {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
-<button
+                  <button
                     onClick={(e) => handleNavigateClick(caseItem, e)}
-                    className="flex items-center px-3 py-1 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
+                    className="flex items-center px-3 py-1.5 text-sm bg-emerald-500 text-white rounded-lg hover:bg-emerald-600"
                   >
                     <Navigation className="w-4 h-4 mr-1" />
                     นำทาง

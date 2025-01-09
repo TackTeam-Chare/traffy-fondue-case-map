@@ -3,14 +3,58 @@ import React, { useState } from "react";
 import {
   MapPin, Tag, Building, Star, MessageCircle,
   Check, XCircle, Navigation, Edit, Users, ThumbsUp,
-  ThumbsDown, Eye, CalendarDays
+  ThumbsDown, Eye, CalendarDays, Maximize2, Minimize2,MessageSquare
 } from "lucide-react";
 import NextImage from "next/image";
 import ReviewModal from "@/components/ReviewModal";
+import CommentsSection from "@/components/CommentsSection";
 
 const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [selectedCase, setSelectedCase] = useState(null);
+  const [expandedComments, setExpandedComments] = useState(new Set());
+  const [expandedCases, setExpandedCases] = useState(new Set());
+
+  // Process cases to add totalComments property
+  const processedCases = cases.map((caseItem) => {
+    const totalComments =
+      (caseItem.agreeComments?.length || 0) +
+      (caseItem.disagreeComments?.length || 0);
+
+    console.log(`Case ID: ${caseItem.id}, Total Comments: ${totalComments}`);
+
+    return {
+      ...caseItem,
+      totalComments,
+    };
+  });
+
+
+  const toggleComments = (caseId, e) => {
+    e.stopPropagation(); // Prevent case selection when clicking comments
+    setExpandedComments(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(caseId)) {
+        newSet.delete(caseId);
+      } else {
+        newSet.add(caseId);
+      }
+      return newSet;
+    });
+  };
+
+  const toggleCaseExpansion = (caseId, e) => {
+    e.stopPropagation(); // Prevent case selection when clicking expand
+    setExpandedCases(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(caseId)) {
+        newSet.delete(caseId);
+      } else {
+        newSet.add(caseId);
+      }
+      return newSet;
+    });
+  };
 
   const handleReviewClick = (caseItem, e) => {
     e.stopPropagation();
@@ -57,24 +101,40 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
           </div>
         ) : (
           <div className="space-y-2">
-            {cases.map((caseItem) => (
+            {processedCases.map((caseItem) => (
+              
               // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 <div
                 key={caseItem.id}
                 onClick={() => onSelectCase(caseItem)}
-                className="group p-2.5 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-all duration-200 cursor-pointer"
+                className={`group p-2.5 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-all duration-200 cursor-pointer ${
+                  expandedCases.has(caseItem.id) ? 'ring-2 ring-blue-200' : ''
+                }`}
               >
-                {/* Header with Stats */}
-                <div className="flex flex-wrap gap-1.5 mb-2">
-                  <span className="px-2 py-0.5 text-xs bg-emerald-50 text-emerald-700 rounded-full font-medium">
-                    {caseItem.ticket_id || "ไม่ระบุ ID"}
-                  </span>
-                  <div className="flex items-center gap-1 text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
-                    <CalendarDays className="w-3 h-3 text-blue-500" />
-                    <span className="text-xs">
-                      {new Date().toLocaleDateString("th-TH")}
+                {/* Header with Stats and Expand Button */}
+                <div className="flex justify-between items-center mb-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="px-2 py-0.5 text-xs bg-emerald-50 text-emerald-700 rounded-full font-medium">
+                      {caseItem.ticket_id || "ไม่ระบุ ID"}
                     </span>
+                    <div className="flex items-center gap-1 text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
+                      <CalendarDays className="w-3 h-3 text-blue-500" />
+                      <span className="text-xs">
+                        {new Date().toLocaleDateString("th-TH")}
+                      </span>
+                    </div>
                   </div>
+                  {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+<button
+                    onClick={(e) => toggleCaseExpansion(caseItem.id, e)}
+                    className="p-1 hover:bg-gray-200 rounded-full"
+                  >
+                    {expandedCases.has(caseItem.id) ? (
+                      <Minimize2 className="w-4 h-4 text-gray-600" />
+                    ) : (
+                      <Maximize2 className="w-4 h-4 text-gray-600" />
+                    )}
+                  </button>
                 </div>
 
                 {/* Images */}
@@ -112,34 +172,40 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
                     <span className="text-xs line-clamp-2">{caseItem.comment || "ไม่มีหมายเหตุ"}</span>
                   </div>
                 </div>
-                 {/* Investigators */}
-                 {caseItem.investigators?.length > 0 && (
+                     {/* Investigators */}
+                     {caseItem.investigators?.length > 0 && (
                   <div className="mt-3 text-sm text-gray-600">
                     <Users className="inline w-4 h-4 text-emerald-500 mr-1" />
-                    <span>ผู้ตรวจสอบ:</span>{" "}
-                    {caseItem.investigators.join(", ") || "ไม่ระบุ"}
-                  </div>
-                )}
-
-                {/* Review Summary */}
-                {caseItem.reviewSummary && (
-                  <div className="mt-3 flex flex-wrap gap-3 text-sm">
-                    {caseItem.reviewSummary.passCount > 0 && (
-                      <span className="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded-full">
-                        <Check className="w-4 h-4" />
-                        เห็นด้วย: {caseItem.reviewSummary.passCount}
-                      </span>
-                    )}
-                    {caseItem.reviewSummary.failCount > 0 && (
-                      <span className="flex items-center gap-1 px-2 py-1 bg-red-50 text-red-700 rounded-full">
-                        <XCircle className="w-4 h-4" />
-                        ไม่เห็นด้วย: {caseItem.reviewSummary.failCount}
+                    {caseItem.investigators.length === 1 ? (
+                      <span>{caseItem.investigators[0]}</span>
+                    ) : (
+                      <span>
+                        {caseItem.investigators[0]} และคนอื่น ๆ อีก {caseItem.investigators.length - 1} คน
                       </span>
                     )}
                   </div>
                 )}
 
-                {/* Stats */}
+
+                    {/* Review Summary */}
+                    {caseItem.reviewSummary && (
+                      <div className="mt-3 flex flex-wrap gap-3 text-sm">
+                        {caseItem.reviewSummary.passCount > 0 && (
+                          <span className="flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 rounded-full">
+                            <Check className="w-4 h-4" />
+                            เห็นด้วย {caseItem.reviewSummary.passCount} คน
+                          </span>
+                        )}
+                        {caseItem.reviewSummary.failCount > 0 && (
+                          <span className="flex items-center gap-1 px-2 py-1 bg-red-50 text-red-700 rounded-full">
+                            <XCircle className="w-4 h-4" />
+                            ไม่เห็นด้วย {caseItem.reviewSummary.failCount} คน
+                          </span>
+                        )}
+                      </div>
+                    )}
+             
+                {/* Stats and Actions */}
                 <div className="flex items-center justify-between mt-2 border-t border-gray-200 pt-2">
                   <div className="flex items-center gap-3 text-xs">
                     <div className="flex items-center gap-1">
@@ -162,6 +228,35 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
                     )}
                   </div>
                   <div className="flex gap-1">
+          
+      
+        {/* {caseItem.reviewSummary.passCount > 0 && (
+          <button className="flex items-center gap-1 px-2 py-1 text-xs bg-green-50 text-green-700 rounded-full">
+            <Check className="w-3 h-3" />
+            <span>ผ่าน{caseItem.reviewSummary.passCount}</span>
+          </button>
+        )}
+        {caseItem.reviewSummary.failCount > 0 && (
+          <button className="flex items-center gap-1 px-2 py-1 text-xs bg-red-50 text-red-700 rounded-full">
+            <XCircle className="w-3 h-3" />
+            <span>ไม่ผ่าน{caseItem.reviewSummary.failCount}</span>
+          </button>
+        )} */}
+                {/* Comments Button */}
+
+    {caseItem.totalComments > 0 && (
+                      // biome-ignore lint/a11y/useButtonType: <explanation>
+<button
+                        onClick={(e) => toggleComments(caseItem.id, e)}
+                        className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100"
+                      >
+                        <MessageSquare className="w-3 h-3" />
+                        {expandedComments.has(caseItem.id)
+                          ? `ซ่อน(${caseItem.totalComments})`
+                          : `(${caseItem.totalComments})`}
+                      </button>
+                    )}
+
                     {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 <button
                       onClick={(e) => handleReviewClick(caseItem, e)}
@@ -170,7 +265,6 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
                       <Edit className="w-3 h-3 mr-1" />
                       รีวิว
                     </button>
-
                     {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 <button
                       onClick={(e) => handleNavigateClick(caseItem, e)}
@@ -181,12 +275,41 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
                     </button>
                   </div>
                 </div>
+
+                {/* Comments Section */}
+                {expandedComments.has(caseItem.id) && (
+                  <div className="mt-4">
+                    {caseItem.agreeComments && (
+                      <CommentsSection
+                        comments={caseItem.agreeComments}
+                        status="agree"
+                      />
+                    )}
+                    {caseItem.disagreeComments && (
+                      <CommentsSection
+                        comments={caseItem.disagreeComments}
+                        status="disagree"
+                      />
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
       </div>
-      <ReviewModal isOpen={isReviewOpen} onClose={() => setIsReviewOpen(false)} place={selectedCase} />
+
+      {/* Review Modal */}
+      {isReviewOpen && selectedCase && (
+        <ReviewModal 
+          isOpen={isReviewOpen} 
+          onClose={() => {
+            setIsReviewOpen(false);
+            setSelectedCase(null);
+          }} 
+          place={selectedCase} 
+        />
+      )}
     </div>
   );
 };

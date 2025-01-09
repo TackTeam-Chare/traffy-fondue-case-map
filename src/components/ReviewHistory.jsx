@@ -165,7 +165,7 @@ const formatDuration = (minutes) => {
                             ? "bg-green-100 text-green-700" 
                             : "bg-red-100 text-red-700"
                         }`}>
-                          {item.reviewStatus === "pass" ? "ผ่านการตรวจสอบ" : "ไม่ผ่านการตรวจสอบ"}
+                          {item.reviewStatus === "pass" ? "ให้ผ่าน" : "ไม่ผ่าน"}
                         </div>
                           <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 rounded-full">
                             <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />

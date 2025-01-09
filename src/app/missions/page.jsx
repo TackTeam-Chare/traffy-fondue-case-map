@@ -1,81 +1,119 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import ReviewHistory from "@/components/ReviewHistory";
-import { Circles } from "react-loader-spinner";
 import Footer from "@/components/Footer";
 import SearchFilter from "@/components/SearchFilter";
+import { fetchUserDashboard } from "@/services/api";
+import liff from "@line/liff";
 import { searchPlaces } from "@/services/api";
 
 import {
-    FaCoins,
-    FaTasks,
-    FaUsers,
-    FaChartLine,
-    FaAward,
-    FaBell,
-    FaStar,
-    FaTrophy,
-  } from "react-icons/fa";
-  import {  GiTrophyCup,  } from "react-icons/gi";
+  FaCoins,
+  FaTasks,
+  FaUsers,
+  FaChartLine,
+  FaAward,
+  FaBell,
+  FaStar,
+} from "react-icons/fa";
 
 const Home = () => {
-  const [places, setPlaces] = useState([]); // ข้อมูลที่จะแสดงใน CaseList
-  const [searchResults, setSearchResults] = useState([]); // ข้อมูลการค้นหา
-  const [isSearchActive, setIsSearchActive] = useState(false); // ตรวจสอบโหมดการค้นหา
-  const [loading, setLoading] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
+  const [points, setPoints] = useState(0);
+  const [badges, setBadges] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview");
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [userId, setUserId] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+  const [searchResults, setSearchResults] = useState([]); 
+  const [places, setPlaces] = useState([]);
+  const [isSearchActive, setIsSearchActive] = useState(false);
 
-  const [activeTab, setActiveTab] = useState("overview");
+   const handleOpenHistory = () => {
+      setIsHistoryOpen(true);
+    };
+  
+    const handleOpenSearch = () => {
+      setIsSearchOpen(true);
+    };
 
-  // Mock Data
-  const points = 1250;
-  const badges = 5;
-  const rewards = ["คูปองส่วนลด", "บัตรกำนัล"];
+    const handleSearch = async (filters) => {
+      try {
+        const data = await searchPlaces({
+          ...filters,
+          latitude: userLocation?.lat,
+          longitude: userLocation?.lng,
+        });
+        setSearchResults(data); // บันทึกผลการค้นหา
+        setPlaces(data); // ใช้ผลการค้นหาเป็น places
+        setIsSearchActive(true); // ระบุว่าอยู่ในโหมดการค้นหา
+      } catch (error) {
+        console.error("Search error:", error);
+      } 
+    };
+  
   const dailyMissions = [
     { id: 1, title: "รายงานปัญหาในพื้นที่ห่างไกล", status: "completed" },
     { id: 2, title: "อัปโหลดภาพปัญหา", status: "in-progress" },
   ];
-  const leaderboard = [
-    { id: 1, name: "User A", points: 2500 },
-    { id: 2, name: "User B", points: 2000 },
-    { id: 3, name: "User C", points: 1750 },
-  ];
 
-  const handleOpenHistory = () => {
-    setIsHistoryOpen(true);
-  };
-
-  const handleOpenSearch = () => {
-    setIsSearchOpen(true);
-  };
-
-  const handleSearch = async (filters) => {
+  // ✅ ดึงโปรไฟล์ LINE
+  const fetchUserProfile = async () => {
     try {
-      setLoading(true);
-      const data = await searchPlaces({
-        ...filters,
-        latitude: userLocation?.lat,
-        longitude: userLocation?.lng,
-      });
-      setSearchResults(data); // บันทึกผลการค้นหา
-      setPlaces(data); // ใช้ผลการค้นหาเป็น places
-      setIsSearchActive(true); // ระบุว่าอยู่ในโหมดการค้นหา
+      const storedProfile = localStorage.getItem("userProfile");
+      if (storedProfile) {
+        const profile = JSON.parse(storedProfile);
+        setUserProfile(profile);
+        setUserId(profile.userId);
+      } else {
+        await liff.init({ liffId: process.env.NEXT_PUBLIC_LIFF_ID });
+        if (!liff.isLoggedIn()) {
+          liff.login();
+        } else {
+          const profile = await liff.getProfile();
+          setUserProfile(profile);
+          setUserId(profile.userId);
+          localStorage.setItem("userProfile", JSON.stringify(profile));
+        }
+      }
     } catch (error) {
-      console.error("Search error:", error);
+      console.error("LINE Login Error:", error);
+    }
+  };
+
+  // ✅ ดึงข้อมูลแต้มจาก Backend
+  const fetchUserDashboardData = async (userId) => {
+    try {
+      const data = await fetchUserDashboard(userId);
+      setPoints(data.points || 0);
+      setBadges(data.badges || 0);
+    } catch (error) {
+      console.error("Failed to fetch user dashboard:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    const initialize = async () => {
+      await fetchUserProfile();
+    };
+    initialize();
+  }, []);
 
-
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    if (userId) {
+      fetchUserDashboardData(userId);
+    }
+  }, [userId]);
 
   return (
-    <div className="min-h-screen  p-4 ">
-           {/* Header */}
+    <div className="min-h-screen p-4">
+      {/* Header */}
       <header className="flex items-center justify-between p-4 bg-emerald-700 text-white rounded-lg shadow-md">
         <h1 className="text-xl font-bold">📊 ระบบแต้มและรางวัล</h1>
         {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
@@ -155,75 +193,22 @@ const Home = () => {
         </section>
       )}
 
-      {/* Community Tab */}
-      {activeTab === "community" && (
-        <section className="mt-6 p-4 bg-white rounded-lg shadow-lg">
-          <h2 className="text-lg font-bold mb-4">🏅 กระดานผู้นำ</h2>
-          <ul>
-            {leaderboard.map((user, index) => (
-              <li
-                key={user.id}
-                className="flex justify-between items-center p-2 border-b"
-              >
-                <span>
-                  #{index + 1} {user.name}
-                </span>
-                <span className="text-emerald-600 font-semibold">
-                  {user.points} แต้ม
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* Rewards Tab */}
-      {activeTab === "rewards" && (
-        <section className="mt-6 p-4 bg-white rounded-lg shadow-lg">
-          <h2 className="text-lg font-bold mb-4">🎁 รางวัลที่ได้รับ</h2>
-          <ul>
-            {rewards.map((reward, index) => (
-              <li
-                // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                key={index}
-                className="p-2 border-b flex items-center gap-2"
-              >
-                <GiTrophyCup className="text-yellow-500 text-xl" />
-                {reward}
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      {/* Loading Spinner */}
-      {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
-          <Circles height="60" width="60" color="#15803d" ariaLabel="loading-indicator" />
-        </div>
-      )}
-
-      {/* Search Modal */}
-      <SearchFilter
+         {/* Search Modal */}
+         <SearchFilter
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
         onSearch={handleSearch}
       />
-
- 
-
-    
-
-      {/* ReviewHistory Modal */}
-      <ReviewHistory
+     {/* ReviewHistory Modal */}
+     <ReviewHistory
         userId={userId}
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
       />
-
-      {/* Footer */}
-      <Footer onOpenHistory={handleOpenHistory} onOpenSearch={handleOpenSearch} />
+ {/* Footer */}
+ <Footer onOpenHistory={handleOpenHistory} onOpenSearch={handleOpenSearch} />
     </div>
   );
 };
 
-export default Home ;
+export default Home;

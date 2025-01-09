@@ -122,3 +122,13 @@ export const fetchCategories = async () => {
     throw new Error(error.response?.data?.error || 'Failed to fetch categories');
   }
 };
+
+export const fetchUserDashboard = async (userId) => {
+  try {
+    const response = await api.get(`/dashboard/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    throw new Error(error.response?.data?.error || 'Failed to fetch categories');
+  }
+};

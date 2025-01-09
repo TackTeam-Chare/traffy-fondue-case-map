@@ -69,6 +69,7 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
   const [loading, setLoading] = useState(false);
   const [comment, setComment] = useState("");
   const [userProfile, setUserProfile] = useState(null);
+  const [points, setPoints] = useState(null);
 
   const [selectedFiles, setSelectedFiles] = useState([]); 
   useEffect(() => {
@@ -166,52 +167,71 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
     setLoading(true);
   
     if (!reviewStatus) {
-      toast.error("กรุณาเลือกเกณฑ์ (ผ่าน/ไม่ผ่าน)", {
-        style: { background: "#DC2626", color: "white" },
-      });
+      toast.error("กรุณาเลือกเกณฑ์ (ผ่าน/ไม่ผ่าน)");
       setLoading(false);
       return;
     }
   
     try {
-      // Create a FormData object
       const formData = new FormData();
-  
-      // Append data to the FormData object
       formData.append("placeId", place.id);
       formData.append("userId", userProfile.userId);
       formData.append("displayName", userProfile.displayName);
       formData.append("reviewStatus", reviewStatus);
       formData.append("stars", stars);
       formData.append("comment", comment);
-      formData.append("timestamp", new Date().toISOString());
-
-        // Append all selected files
-        // biome-ignore lint/complexity/noForEach: <explanation>
-                                                selectedFiles.forEach((file) => {
-          formData.append("images", file);
-        });
   
-      // Call the saveReview function
-      await saveReview(formData);
+      // ดึงค่าพิกัดจาก browser
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            formData.append("lat", position.coords.latitude);
+            formData.append("lng", position.coords.longitude);
   
-      toast.success("บันทึกข้อคิดเห็นของท่านสำเร็จ", {
-        style: {
-          background: "#059669",
-          color: "white",
-          fontWeight: "bold",
-        },
-      });
+            // biome-ignore lint/complexity/noForEach: <explanation>
+              selectedFiles.forEach((file) => {
+              formData.append("images", file);
+            });
   
+            submitReview(formData);
+          },
+          (error) => {
+            console.error("Error fetching location:", error);
+            toast.error("ไม่สามารถดึงตำแหน่งที่ตั้งได้");
+            setLoading(false);
+          }
+        );
+      } else {
+        toast.error("เบราว์เซอร์ไม่รองรับการดึงตำแหน่งที่ตั้ง");
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("🚨 Error submitting review:", error);
+      toast.error("เกิดข้อผิดพลาด! โปรดลองอีกครั้ง");
+      setLoading(false);
+    }
+  };
+  
+  const submitReview = async (formData) => {
+    try {
+      const response = await saveReview(formData);
+      console.log("🎯 Backend Response:", response);
+  
+      if (response.pointsEarned) {
+        setPoints(response.pointsEarned);
+        toast.success(`บันทึกรีวิวสำเร็จ! คุณได้รับ ${response.pointsEarned} แต้ม`);
+      }
       onClose();
     } catch (error) {
-      toast.error("เกิดข้อผิดพลาด! โปรดลองอีกครั้ง", {
-        style: { background: "#DC2626", color: "white" },
-      });
+      console.error("🚨 Error submitting review:", error);
+      toast.error("เกิดข้อผิดพลาด! โปรดลองอีกครั้ง");
     } finally {
       setLoading(false);
     }
   };
+  
+  
+  
   
 
 
@@ -250,6 +270,7 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
               </div>
             )}
           </div>
+
 
           {/* Form Content */}
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-5">
@@ -322,7 +343,12 @@ const ReviewModal = ({ isOpen, onClose, place }) => {
                 placeholder="กรอกความคิดเห็น..."
               />
             </div>
-
+                          {/* แสดงแต้มที่ได้ */}
+{points && (
+  <div className="p-4 text-center text-emerald-600 font-bold">
+    🎉 คุณได้รับ {points} แต้มจากการรีวิวนี้!
+  </div>
+)}
             {/* Action Buttons */}
             <div className="grid grid-cols-2 gap-3 pt-2">
               <button

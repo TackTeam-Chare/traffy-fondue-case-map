@@ -38,8 +38,8 @@ export const getUserProfile = async () => {
 
     // Mock Profile Fallback
     const mockProfile = {
-      userId: "mock-user-1234",
-      displayName: "Mock User",
+      userId: "mock-user-1345",
+      displayName: "TackTeam",
       pictureUrl: "https://via.placeholder.com/150",
       statusMessage: "This is a mock user profile",
     };

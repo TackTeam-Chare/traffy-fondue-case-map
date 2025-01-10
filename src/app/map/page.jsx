@@ -165,7 +165,6 @@ const Map = () => {
             fetchNearbyPlaces={fetchNearbyPlaces}
             isSearchActive={isSearchActive}
             places={places}
-   
           />
         )}
       </div>

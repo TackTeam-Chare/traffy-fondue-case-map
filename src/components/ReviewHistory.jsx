@@ -76,6 +76,7 @@ const formatDuration = (minutes) => {
             durationTotal: item.duration_minutes_total,
             photo: item.photo_before,
             photoAfter: item.photo_after,
+            timestamp_inprogress: item.timestamp_inprogress,
             timestamp_finished: item.timestamp_finished,
             subdistrict: item.subdistrict,
             district: item.district,
@@ -104,6 +105,20 @@ const formatDuration = (minutes) => {
 
   if (!isOpen) return null;
 
+  const renderStars = (stars) => {
+    const totalStars = 5;
+    return Array.from({ length: totalStars }, (_, index) => (
+      <Star
+        key={index}
+        className={`w-4 h-4 ${
+          index < stars ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
+        }`}
+      />
+    ));
+  };
+
+  if (!isOpen) return null;
+  
   return (
     <AnimatePresence>
     <motion.div
@@ -128,8 +143,12 @@ const formatDuration = (minutes) => {
 <button onClick={onClose} className="hover:bg-white/10 p-2 rounded-full">
             <X className="w-5 h-5" />
           </button>
+          
         </div>
-       
+          {/* Total Reviews */}
+          <div className="px-4 py-2 bg-gray-100 text-gray-700 text-sm">
+            คุณได้ตรวจสอบทั้งหมด <span className="font-semibold">{history.length}</span> ครั้ง
+          </div>
           {/* Content */}
           <div className="overflow-y-auto" style={{ height: "calc(90vh - 57px)" }}>
             {loading ? (
@@ -168,8 +187,9 @@ const formatDuration = (minutes) => {
                           {item.reviewStatus === "pass" ? "ให้ผ่าน" : "ไม่ผ่าน"}
                         </div>
                           <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 rounded-full">
-                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                            <span className="text-sm font-medium text-blue-700">{item.stars || "0"}</span>
+
+                            {renderStars(item.stars)}
+
                           </div>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-gray-600">
@@ -304,10 +324,24 @@ const formatDuration = (minutes) => {
 </div>
 
 {/* วันที่เสร็จสิ้น */}
+{/* <div className="flex flex-col bg-gray-50 p-3 rounded-lg">
+  <div className="flex items-center gap-2 mb-1">
+    <Calendar className="w-5 h-5 text-green-500" />
+    <span className="font-medium text-gray-700">เริ่มดำเนินการเมื่อ</span>
+  </div>
+  <p className="text-gray-800 font-semibold">
+    {item.timestamp_inprogress
+      ? new Date(item.timestamp_inprogress).toLocaleString('th-TH', {
+          dateStyle: 'medium',
+          timeStyle: 'short',
+        })
+      : "ไม่ระบุ"}
+  </p>
+</div> */}
 <div className="flex flex-col bg-gray-50 p-3 rounded-lg">
   <div className="flex items-center gap-2 mb-1">
     <Calendar className="w-5 h-5 text-green-500" />
-    <span className="font-medium text-gray-700">เสร็จสิ้นเมื่อ</span>
+    <span className="font-medium text-gray-700">เเก้ไขเเล้วเสร็จสิ้นเมื่อ</span>
   </div>
   <p className="text-gray-800 font-semibold">
     {item.timestamp_finished
@@ -323,7 +357,7 @@ const formatDuration = (minutes) => {
 <div className="flex flex-col bg-gray-50 p-3 rounded-lg">
   <div className="flex items-center gap-2 mb-1">
     <Timer className="w-5 h-5 text-yellow-500" />
-    <span className="font-medium text-gray-700">ระยะเวลาดำเนินการ</span>
+    <span className="font-medium text-gray-700">ระยะเวลาดำเนินการทั้งหมด</span>
   </div>
   <p className="text-gray-800 font-semibold">
   {item.durationTotal

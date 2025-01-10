@@ -24,6 +24,7 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
       organization: place.organization,
       organization_action: place.organization_action,
       comment: place.comment,
+      timestamp:place.timestamp,
       coords: place.coords,
       latitude: Number.parseFloat(place.coords.split(",")[1]), // Parse latitude
       longitude: Number.parseFloat(place.coords.split(",")[0]), // Parse longitude
@@ -34,6 +35,9 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
       ],
       star: place.star || 0,
       view_count: place.view_count || 0,
+      elapsedDays: place.elapsedDays || null,
+      inProgressDuration: place.inProgressDuration || null,
+      finishedDuration: place.finishedDuration || null,
       reviewSummary: {
         totalReviews: place.reviewSummary?.total_reviews || 0,
         passCount: place.reviewSummary?.pass_count || 0,

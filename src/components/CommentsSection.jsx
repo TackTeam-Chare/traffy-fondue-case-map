@@ -35,6 +35,24 @@ const CommentsSection = ({ comments, status }) => {
     return new Date(timestamp).toLocaleDateString("th-TH", options);
   };
 
+  const timeSince = (timestamp) => {
+    const now = Date.now();
+    const diffInSeconds = Math.floor((now - new Date(timestamp).getTime()) / 1000);
+
+    if (diffInSeconds < 60) {
+      return `${diffInSeconds} วินาทีที่แล้ว`;
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} นาทีที่แล้ว`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} ชั่วโมงที่แล้ว`;
+    } else {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} วันที่แล้ว`;
+    }
+  };
+
   return (
     <div
       className={`${bgColor} border ${borderColor} rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl`}
@@ -76,8 +94,11 @@ const CommentsSection = ({ comments, status }) => {
                   <h4 className="text-sm font-semibold text-gray-900">
                     {comment.user || "ไม่ระบุชื่อ"}
                   </h4>
-                  <time className="text-xs text-gray-500">
-                    {formatDate(comment.timestamp)}
+                  <time
+                    className="text-xs text-gray-500"
+                    title={formatDate(comment.timestamp)} // แสดงเวลาเต็มเมื่อ hover
+                  >
+                    {timeSince(comment.timestamp)} ({formatDate(comment.timestamp)})
                   </time>
                 </div>
                 <p className="mt-2 text-sm text-gray-700 leading-relaxed">

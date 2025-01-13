@@ -1,6 +1,6 @@
 import { CalendarDays, UserCircle, ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
 
-const CommentsSection = ({ comments }) => {
+const CommentsCaseList = ({ comments }) => {
   if (!comments || comments.length === 0) {
     return null; // Hide entire section if no comments
   }
@@ -104,4 +104,4 @@ const CommentsSection = ({ comments }) => {
   );
 };
 
-export default CommentsSection;
+export default CommentsCaseList;

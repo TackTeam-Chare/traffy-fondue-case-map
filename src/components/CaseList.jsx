@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import NextImage from "next/image";
 import ReviewModal from "@/components/ReviewModal";
-import CommentsSection from "@/components/CommentsSection";
+import CommentsCaseList from "@/components/CommentsCaseList";
 
 const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
   const [isReviewOpen, setIsReviewOpen] = useState(false);
@@ -272,7 +272,8 @@ const processedCases = cases.map((caseItem) => {
                 {/* Comments Button */}
 
                 {caseItem.totalComments > 0 && (
-  <button
+  // biome-ignore lint/a11y/useButtonType: <explanation>
+<button
     onClick={(e) => toggleComments(caseItem.id, e)}
     className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100"
   >
@@ -305,7 +306,7 @@ const processedCases = cases.map((caseItem) => {
 {/* Comments Section */}
 {expandedComments.has(caseItem.id) && (
   <div className="mt-6">
-    <CommentsSection
+    <CommentsCaseList
       comments={[
         ...caseItem.agreeComments.map((c) => ({ ...c, status: "agree" })),
         ...caseItem.disagreeComments.map((c) => ({ ...c, status: "disagree" })),

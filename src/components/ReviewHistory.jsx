@@ -29,8 +29,29 @@ const ReviewHistory = ({ userId, isOpen, onClose }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const calculateElapsedTime = (timestamp) => {
+    if (!timestamp) return "ไม่ระบุ";
+  
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffInSeconds = Math.floor((now - time) / 1000);
+  
+    const days = Math.floor(diffInSeconds / (24 * 3600));
+    const hours = Math.floor((diffInSeconds % (24 * 3600)) / 3600);
+  
+    if (days > 0) {
+      return `${days} วัน ${hours} ชั่วโมง ที่แล้ว`;
+    } else if (hours > 0) {
+      return `${hours} ชั่วโมง ที่แล้ว`;
+    } else {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} นาที ที่แล้ว`;
+    }
+  };
+  
+  
   // ฟังก์ชันสำหรับแปลงนาทีเป็น ชั่วโมง และ นาที
-const formatDuration = (minutes) => {
+  const formatDuration = (minutes) => {
   if (minutes < 60) {
     return `${minutes} นาที`;
   }
@@ -56,10 +77,11 @@ const formatDuration = (minutes) => {
         );
         console.log("📊 Raw API Response:", response.data);
   
-        const formattedHistory = response.data.map((item) => {
+        const formattedHistory = response.data.map((item,index) => {
           console.log("🖼️ User Uploaded Images (Before Parse):", item.user_uploaded_images);
           return {
             reviewId: item.review_id,
+            order: index + 1,
             id: item.place_id,
             address: item.address,
             reviewStatus: item.review_status,
@@ -149,6 +171,7 @@ const formatDuration = (minutes) => {
           <div className="px-4 py-2 bg-gray-100 text-gray-700 text-sm">
             คุณได้ตรวจสอบทั้งหมด <span className="font-semibold">{history.length}</span> ครั้ง
           </div>
+          
           {/* Content */}
           <div className="overflow-y-auto" style={{ height: "calc(90vh - 57px)" }}>
             {loading ? (
@@ -179,6 +202,9 @@ const formatDuration = (minutes) => {
                       {/* Header with Status */}
                       <div className="flex items-center justify-between pb-3 border-b">
                         <div className="flex items-center gap-2">
+                        {/* <div className="text-sm text-gray-600 font-semibold mb-2">
+                        ลำดับที่: {item.order}
+                      </div> */}
                         <div className={`px-3 py-1 rounded-full text-sm font-medium ${
                           item.reviewStatus === "pass" 
                             ? "bg-green-100 text-green-700" 
@@ -223,22 +249,30 @@ const formatDuration = (minutes) => {
                           </div>
 
                           {/* Ticket Info */}
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                          {/* <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Ticket className="w-4 h-4" />
                             <span>{item.ticketId}</span>
-                          </div>
+                          </div> */}
 
                           {/* Type and Organization */}
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <FileType className="w-4 h-4" />
-                              <span>ประเภท: {item.type}</span>
-                            </div>
-                            <div className="flex items-start gap-2 text-sm text-gray-600">
-                              <Building2 className="w-4 h-4 flex-shrink-0 mt-1" />
-                              <span>หน่วยงาน: {item.organization}</span>
-                            </div>
-                          </div>
+                     {/* Type and Organization */}
+<div className="space-y-2">
+  {/* Type */}
+  <div className="flex items-center gap-2 text-sm text-gray-600">
+    <FileType className="w-4 h-4" />
+    <span> <span className="font-bold">ประเภท: </span>{item.type}</span>
+   
+  </div>
+
+  {/* Organization */}
+  <div className="flex items-start gap-2 text-sm text-gray-600">
+    <Building2 className="w-4 h-4 flex-shrink-0 mt-1" />
+    <span>
+      <span className="font-bold">หน่วยงาน:</span> {item.organization}
+    </span>
+  </div>
+</div>
+
                         </div>
 
                   {/* Photos */}
@@ -309,25 +343,34 @@ const formatDuration = (minutes) => {
 
 {/* วันที่ตรวจสอบ */}
 <div className="flex flex-col bg-gray-50 p-3 rounded-lg">
+  {/* Header */}
   <div className="flex items-center gap-2 mb-1">
     <Clock className="w-5 h-5 text-blue-500" />
-    <span className="font-medium text-gray-700">ตรวจสอบเมื่อ</span>
+    <span className="font-bold text-gray-700">ตรวจสอบเมื่อ</span>
   </div>
+
+  {/* Timestamp */}
   <p className="text-gray-800 font-semibold">
     {item.timestamp
-      ? new Date(item.timestamp).toLocaleString('th-TH', {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-        })
+      ? <>
+          {new Date(item.timestamp).toLocaleString('th-TH', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+          })} 
+          <span className="text-blue-600 font-bold">
+            ({calculateElapsedTime(item.timestamp)})
+          </span>
+        </>
       : "ไม่ระบุ"}
   </p>
 </div>
+
 
 {/* วันที่เสร็จสิ้น */}
 {/* <div className="flex flex-col bg-gray-50 p-3 rounded-lg">
   <div className="flex items-center gap-2 mb-1">
     <Calendar className="w-5 h-5 text-green-500" />
-    <span className="font-medium text-gray-700">เริ่มดำเนินการเมื่อ</span>
+    <span className="font-bold text-gray-700">เริ่มดำเนินการเมื่อ</span>
   </div>
   <p className="text-gray-800 font-semibold">
     {item.timestamp_inprogress
@@ -339,25 +382,34 @@ const formatDuration = (minutes) => {
   </p>
 </div> */}
 <div className="flex flex-col bg-gray-50 p-3 rounded-lg">
+  {/* Header */}
   <div className="flex items-center gap-2 mb-1">
     <Calendar className="w-5 h-5 text-green-500" />
-    <span className="font-medium text-gray-700">เเก้ไขเเล้วเสร็จสิ้นเมื่อ</span>
+    <span className="font-bold text-gray-700">เเก้ไขเเล้วเสร็จสิ้นเมื่อ</span>
   </div>
+
+  {/* Timestamp */}
   <p className="text-gray-800 font-semibold">
     {item.timestamp_finished
-      ? new Date(item.timestamp_finished).toLocaleString('th-TH', {
-          dateStyle: 'medium',
-          timeStyle: 'short',
-        })
+      ? <>
+          {new Date(item.timestamp_finished).toLocaleString('th-TH', {
+            dateStyle: 'medium',
+            timeStyle: 'short',
+          })}
+          <span className="text-green-600 font-bold">
+            ({calculateElapsedTime(item.timestamp_finished)})
+          </span>
+        </>
       : "ไม่ระบุ"}
   </p>
 </div>
+
 
 {/* ระยะเวลาดำเนินการ */}
 <div className="flex flex-col bg-gray-50 p-3 rounded-lg">
   <div className="flex items-center gap-2 mb-1">
     <Timer className="w-5 h-5 text-yellow-500" />
-    <span className="font-medium text-gray-700">ระยะเวลาดำเนินการทั้งหมด</span>
+    <span className="font-bold text-gray-700">ระยะเวลาดำเนินการทั้งหมด</span>
   </div>
   <p className="text-gray-800 font-semibold">
   {item.durationTotal

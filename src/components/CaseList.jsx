@@ -15,19 +15,40 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
   const [expandedComments, setExpandedComments] = useState(new Set());
   const [expandedCases, setExpandedCases] = useState(new Set());
 
+  const calculateElapsedTime = (timestamp) => {
+    if (!timestamp) return "ไม่ระบุ";
+    
+    const caseDate = new Date(timestamp);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - caseDate) / 1000);
+  
+    const days = Math.floor(diffInSeconds / (24 * 60 * 60));
+    const hours = Math.floor((diffInSeconds % (24 * 60 * 60)) / (60 * 60));
+    const minutes = Math.floor((diffInSeconds % (60 * 60)) / 60);
+    const seconds = diffInSeconds % 60;
+  
+    return `${days} วัน ${hours} ชั่วโมง ${minutes} นาที ${seconds} วินาที`;
+  };
+
+  
   // Process cases to add totalComments property
-  const processedCases = cases.map((caseItem) => {
-    const totalComments =
-      (caseItem.agreeComments?.length || 0) +
-      (caseItem.disagreeComments?.length || 0);
+ // Process cases to add totalComments property
+const processedCases = cases.map((caseItem) => {
+  const agreeCommentsWithText = caseItem.agreeComments?.filter((comment) => comment.text) || [];
+  const disagreeCommentsWithText = caseItem.disagreeComments?.filter((comment) => comment.text) || [];
 
-    console.log(`Case ID: ${caseItem.id}, Total Comments: ${totalComments}`);
+  const totalComments = agreeCommentsWithText.length + disagreeCommentsWithText.length;
 
-    return {
-      ...caseItem,
-      totalComments,
-    };
-  });
+  console.log(`Case ID: ${caseItem.id}, Total Valid Comments: ${totalComments}`);
+
+  return {
+    ...caseItem,
+    agreeComments: agreeCommentsWithText, // Replace with filtered agreeComments
+    disagreeComments: disagreeCommentsWithText, // Replace with filtered disagreeComments
+    totalComments, // Use filtered comments count
+  };
+});
+
 
 
   const toggleComments = (caseId, e) => {
@@ -106,7 +127,7 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
               // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
 <div
                 key={caseItem.id}
-                onClick={() => onSelectCase(caseItem)}
+                // onClick={() => onSelectCase(caseItem)}
                 className={`group p-2.5 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-all duration-200 cursor-pointer ${
                   expandedCases.has(caseItem.id) ? 'ring-2 ring-blue-200' : ''
                 }`}
@@ -118,11 +139,17 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
                       {caseItem.ticket_id || "ไม่ระบุ ID"}
                     </span>
                     <div className="flex items-center gap-1 text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
-                      <CalendarDays className="w-3 h-3 text-blue-500" />
-                      <span className="text-xs">
-                        {new Date().toLocaleDateString("th-TH")}
-                      </span>
-                    </div>
+  <CalendarDays className="w-3 h-3 text-blue-500" />
+  <span className="text-xs">
+    {caseItem.timestamp
+      ? `${new Date(caseItem.timestamp).toLocaleString("th-TH", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        })} (${calculateElapsedTime(caseItem.timestamp)})`
+      : "ไม่ระบุ"}
+  </span>
+</div>
+
                   </div>
                   {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 <button
@@ -244,18 +271,18 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
         )} */}
                 {/* Comments Button */}
 
-    {caseItem.totalComments > 0 && (
-                      // biome-ignore lint/a11y/useButtonType: <explanation>
-<button
-                        onClick={(e) => toggleComments(caseItem.id, e)}
-                        className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100"
-                      >
-                        <MessageSquare className="w-3 h-3" />
-                        {expandedComments.has(caseItem.id)
-                          ? `ซ่อน(${caseItem.totalComments})`
-                          : `(${caseItem.totalComments})`}
-                      </button>
-                    )}
+                {caseItem.totalComments > 0 && (
+  <button
+    onClick={(e) => toggleComments(caseItem.id, e)}
+    className="flex items-center gap-1 px-2 py-1 text-xs bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100"
+  >
+    <MessageSquare className="w-3 h-3" />
+    {expandedComments.has(caseItem.id)
+      ? `ซ่อน (${caseItem.totalComments})`
+      : `ดูความคิดเห็น (${caseItem.totalComments})`}
+  </button>
+)}
+
 
                     {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
 <button
@@ -275,24 +302,19 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
                     </button>
                   </div>
                 </div>
+{/* Comments Section */}
+{expandedComments.has(caseItem.id) && (
+  <div className="mt-6">
+    <CommentsSection
+      comments={[
+        ...caseItem.agreeComments.map((c) => ({ ...c, status: "agree" })),
+        ...caseItem.disagreeComments.map((c) => ({ ...c, status: "disagree" })),
+      ]}
+    />
+  </div>
+)}
 
-                {/* Comments Section */}
-                {expandedComments.has(caseItem.id) && (
-                  <div className="mt-4">
-                    {caseItem.agreeComments && (
-                      <CommentsSection
-                        comments={caseItem.agreeComments}
-                        status="agree"
-                      />
-                    )}
-                    {caseItem.disagreeComments && (
-                      <CommentsSection
-                        comments={caseItem.disagreeComments}
-                        status="disagree"
-                      />
-                    )}
-                  </div>
-                )}
+
               </div>
             ))}
           </div>

@@ -48,10 +48,16 @@ const MapSearch = ({
 
   
   
-  const handleViewComments = (comments, status) => {
-    setCommentsData({ comments, status });
-    setIsCommentsModalOpen(true);
-  };
+  // Handle viewing comments
+const handleViewComments = (comments, status) => {
+  const validComments = comments.filter((comment) => comment.text?.trim());
+  if (validComments.length === 0) return; // Do nothing if no valid comments
+
+  setCommentsData({ comments: validComments, status });
+  setIsCommentsModalOpen(true);
+};
+
+  
   
 
   const closeCommentsModal = () => {
@@ -603,20 +609,24 @@ useEffect(() => {
           <p className="text-green-800 font-semibold">
             เห็นด้วย: {selectedPlace.reviewSummary.passCount || 0}
           </p>
-          <p className="text-sm text-gray-600">
-            ความคิดเห็น: {selectedPlace?.agreeComments?.length || 0}
-          </p>
-          {selectedPlace?.agreeComments?.length > 0 && (
-          // biome-ignore lint/a11y/useButtonType: <explanation>
+          {selectedPlace?.agreeComments.filter((comment) => comment.text?.trim()).length > 0 && (
+  <p className="text-sm text-gray-600">
+    ความคิดเห็น: {selectedPlace.agreeComments.filter((comment) => comment.text?.trim()).length}
+  </p>
+)}
+
+{selectedPlace?.agreeComments?.filter((comment) => comment.text?.trim()).length > 0 && (
+  // biome-ignore lint/a11y/useButtonType: <explanation>
 <button
-            onClick={() =>
-              handleViewComments(selectedPlace.agreeComments, "agree")
-            }
-            className="text-green-700 underline text-sm mt-2"
-          >
-            ดูความคิดเห็น
-          </button>
-        )}
+    onClick={() =>
+      handleViewComments(selectedPlace.agreeComments, "agree")
+    }
+    className="text-green-700 underline text-sm mt-2"
+  >
+    ดูความคิดเห็น
+  </button>
+)}
+
         </div>
 
         {/* Fail Section */}
@@ -625,20 +635,25 @@ useEffect(() => {
           <p className="text-red-800 font-semibold">
             ไม่เห็นด้วย: {selectedPlace.reviewSummary.failCount || 0}
           </p>
-          <p className="text-sm text-gray-600">
-            ความคิดเห็น: {selectedPlace?.disagreeComments?.length || 0}
-          </p>
-          {selectedPlace?.disagreeComments?.length > 0 && (
-          // biome-ignore lint/a11y/useButtonType: <explanation>
+          {selectedPlace?.disagreeComments?.filter((comment) => comment.text?.trim()).length > 0 && (
+  <p className="text-sm text-gray-600">
+    ความคิดเห็น: {selectedPlace.disagreeComments.filter((comment) => comment.text?.trim()).length}
+  </p>
+)}
+
+
+{selectedPlace?.disagreeComments?.filter((comment) => comment.text?.trim()).length > 0 && (
+  // biome-ignore lint/a11y/useButtonType: <explanation>
 <button
-            onClick={() =>
-              handleViewComments(selectedPlace.disagreeComments, "disagree")
-            }
-            className="text-red-700 underline text-sm mt-2"
-          >
-            ดูความคิดเห็น
-          </button>
-        )}
+    onClick={() =>
+      handleViewComments(selectedPlace.disagreeComments, "disagree")
+    }
+    className="text-red-700 underline text-sm mt-2"
+  >
+    ดูความคิดเห็น
+  </button>
+)}
+
         </div>
       </div>
       <div className="flex items-center justify-center bg-yellow-100 p-3 rounded-lg">

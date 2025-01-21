@@ -49,6 +49,7 @@ export const fetchPlacesNearbyByCoordinates = async (latitude, longitude, radius
       investigators: place.investigators || [],
       agreeComments: place.agreeComments || [],
       disagreeComments: place.disagreeComments || [],
+      distanceFormatted :place.distanceFormatted
     }));
   } catch (error) {
     console.error("Error fetching places nearby by coordinates:", error);

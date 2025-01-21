@@ -17,7 +17,7 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
 
   const calculateElapsedTime = (timestamp) => {
     if (!timestamp) return "ไม่ระบุ";
-    
+  
     const caseDate = new Date(timestamp);
     const now = new Date();
     const diffInSeconds = Math.floor((now - caseDate) / 1000);
@@ -27,12 +27,13 @@ const CaseList = ({ cases, isSearchActive, onSelectCase }) => {
     const minutes = Math.floor((diffInSeconds % (60 * 60)) / 60);
     const seconds = diffInSeconds % 60;
   
-    return `${days} วัน ${hours} ชั่วโมง ${minutes} นาที ${seconds} วินาที`;
+    return `เมื่อ ${days} วันที่เเล้ว`;
+    // return `เมื่อ ${days} วัน ${hours} ชม. ${minutes} นาที ${seconds} วิ ที่ผ่านมา`;
   };
-
   
-  // Process cases to add totalComments property
- // Process cases to add totalComments property
+  
+
+
 const processedCases = cases.map((caseItem) => {
   const agreeCommentsWithText = caseItem.agreeComments?.filter((comment) => comment.text) || [];
   const disagreeCommentsWithText = caseItem.disagreeComments?.filter((comment) => comment.text) || [];
@@ -166,38 +167,54 @@ const processedCases = cases.map((caseItem) => {
 
                 {/* Images */}
                 {caseItem.images?.length > 0 && (
-                  <div className="grid grid-cols-2 gap-1 mb-2">
-                    {caseItem.images.slice(0, 2).map((img, index) => (
-                      <div
-                        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-                        key={index}
-                        className="relative aspect-video rounded-md overflow-hidden bg-gray-100"
-                      >
-                        <NextImage
-                          src={img.image_url || "/icons/placeholder.png"}
-                          alt={`รูปภาพเคส ${index + 1}`}
-                          layout="fill"
-                          className="object-cover"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
+  <div className="grid grid-cols-2 gap-1 mb-2">
+    {caseItem.images.slice(0, 2).map((img, index) => (
+      <div
+        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
+        key={index}
+        className="relative aspect-video rounded-md overflow-hidden bg-gray-100"
+      >
+        <NextImage
+          src={img.image_url || "/icons/placeholder.png"}
+          alt={`รูปภาพ${index === 0 ? "ก่อน" : "หลัง"}แก้ไข`}
+          layout="fill"
+          className="object-cover"
+        />
+        <div className="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white text-xs font-semibold px-2 py-1">
+          {index === 0 ? "ก่อนแก้ไข" : "หลังแก้ไข"}
+        </div>
+      </div>
+    ))}
+  </div>
+)}
 
+                     <div className="flex items-center gap-1.5">
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className="text-xs line-clamp-2">{caseItem.comment || "ไม่มีหมายเหตุ"}</span>
+                  </div>
                 {/* Details */}
                 <div className="space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-gray-700">
-                    <Tag className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="text-xs">{caseItem.type || "ไม่ระบุประเภท"}</span>
-                  </div>
+             
                   <div className="flex items-center gap-1.5 text-gray-700">
                     <Building className="w-3.5 h-3.5 text-emerald-500" />
                     <span className="text-xs">{caseItem.organization || "ไม่ระบุหน่วยงาน"}</span>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="text-xs line-clamp-2">{caseItem.comment || "ไม่มีหมายเหตุ"}</span>
+                  <div className="flex items-center gap-1.5 text-gray-700">
+                    <Tag className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className="text-xs">{caseItem.type || "ไม่ระบุประเภท"}</span>
                   </div>
+                  {/* <div className="flex items-center gap-1.5 text-gray-700">
+  <Navigation className="w-3.5 h-3.5 text-blue-500" />
+  <span className="text-xs">
+    ระยะทาง: {caseItem.distanceFormatted}
+  </span>
+</div> */}
+
+
+
+
+
+             
                 </div>
                      {/* Investigators */}
                      {caseItem.investigators?.length > 0 && (
@@ -233,8 +250,8 @@ const processedCases = cases.map((caseItem) => {
                     )}
              
                 {/* Stats and Actions */}
-                <div className="flex items-center justify-between mt-2 border-t border-gray-200 pt-2">
-                  <div className="flex items-center gap-3 text-xs">
+                <div className="flex justify-end items-center mt-2 border-t border-gray-200 pt-2">
+                  {/* <div className="flex items-center gap-3 text-xs">
                     <div className="flex items-center gap-1">
                       <ThumbsUp className="w-3 h-3 text-green-500" />
                       <span>{caseItem.likes || "0"}</span>
@@ -253,7 +270,7 @@ const processedCases = cases.map((caseItem) => {
                         <span>{Number.parseFloat(caseItem.reviewSummary.averageStars).toFixed(1)}</span>
                       </div>
                     )}
-                  </div>
+                  </div> */}
                   <div className="flex gap-1">
           
       
@@ -280,7 +297,7 @@ const processedCases = cases.map((caseItem) => {
     <MessageSquare className="w-3 h-3" />
     {expandedComments.has(caseItem.id)
       ? `ซ่อน (${caseItem.totalComments})`
-      : `ดูความคิดเห็น (${caseItem.totalComments})`}
+      : `ความคิดเห็น (${caseItem.totalComments})`}
   </button>
 )}
 

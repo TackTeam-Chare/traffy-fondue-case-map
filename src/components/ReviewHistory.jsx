@@ -239,7 +239,7 @@ const ReviewHistory = ({ userId, isOpen, onClose }) => {
                         <div className="space-y-3">
                           {/* Location */}
                           <div className="flex items-start gap-3">
-                            <MapPin className="w-5 h-5 text-[#1a4e97] flex-shrink-0 mt-1" />
+                            <MapPin className="w-5 h-5 flex-shrink-0 mt-1" />
                             <div className="flex-1">
                               <p className="font-medium text-gray-900">{item.address}</p>
                               <p className="text-sm text-gray-600">
@@ -331,7 +331,7 @@ const ReviewHistory = ({ userId, isOpen, onClose }) => {
                       {/* Comment */}
                       {item.comment && (
                         <div className="flex items-start gap-3 bg-gray-50 p-3 rounded-lg">
-                          <MessageSquare className="w-5 h-5 text-[#1a4e97] flex-shrink-0" />
+                          <MessageSquare className="w-5 h-5 flex-shrink-0" />
                           <div className="flex-1">
                             <p className="text-gray-900">{item.comment}</p>
                           </div>
@@ -345,7 +345,7 @@ const ReviewHistory = ({ userId, isOpen, onClose }) => {
 <div className="flex flex-col bg-gray-50 p-3 rounded-lg">
   {/* Header */}
   <div className="flex items-center gap-2 mb-1">
-    <Clock className="w-5 h-5 text-blue-500" />
+    <Clock className="w-5 h-5 " />
     <span className="font-bold text-gray-700">ตรวจสอบเมื่อ</span>
   </div>
 
@@ -384,7 +384,7 @@ const ReviewHistory = ({ userId, isOpen, onClose }) => {
 <div className="flex flex-col bg-gray-50 p-3 rounded-lg">
   {/* Header */}
   <div className="flex items-center gap-2 mb-1">
-    <Calendar className="w-5 h-5 text-green-500" />
+    <Calendar className="w-5 h-5 " />
     <span className="font-bold text-gray-700">เเก้ไขเเล้วเสร็จสิ้นเมื่อ</span>
   </div>
 
@@ -408,7 +408,7 @@ const ReviewHistory = ({ userId, isOpen, onClose }) => {
 {/* ระยะเวลาดำเนินการ */}
 <div className="flex flex-col bg-gray-50 p-3 rounded-lg">
   <div className="flex items-center gap-2 mb-1">
-    <Timer className="w-5 h-5 text-yellow-500" />
+    <Timer className="w-5 h-5 " />
     <span className="font-bold text-gray-700">ระยะเวลาดำเนินการทั้งหมด</span>
   </div>
   <p className="text-gray-800 font-semibold">

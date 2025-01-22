@@ -39,12 +39,21 @@ const CommentsCaseList = ({ comments }) => {
     <div className="space-y-4">
       {sortedComments.map((comment, index) => (
         <div
+          // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
           key={index}
           className="flex items-start bg-white shadow rounded-lg border border-gray-200 p-4"
         >
-          {/* User Avatar */}
-          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 text-white flex items-center justify-center font-bold text-xl shadow-md">
-            <UserCircle className="w-6 h-6" />
+         {/* User Avatar */}
+         <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden shadow-md">
+            {comment.profileImageUrl ? (
+              <img
+                src={comment.profileImageUrl}
+                alt={`${comment.user || "ผู้ใช้งาน"}'s profile`}
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <UserCircle className="w-full h-full text-gray-400" />
+            )}
           </div>
 
           {/* Comment Details */}

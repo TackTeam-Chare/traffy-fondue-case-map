@@ -6,11 +6,11 @@ import { Circles } from "react-loader-spinner";
 import Footer from "@/components/Footer";
 import {
   fetchPlacesNearbyByCoordinates
-} from "@/services/api";
+} from "@/services/db/api";
 
 import { useJsApiLoader } from "@react-google-maps/api";
 import SearchFilter from "@/components/SearchFilter";
-import { searchPlaces } from "@/services/api";
+import { searchPlaces } from "@/services/db/api";
 
 const MapComponent = dynamic(() => import("@/components/Map"), {
   ssr: false

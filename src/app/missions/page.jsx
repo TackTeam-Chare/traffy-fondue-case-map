@@ -3,9 +3,9 @@ import React, { useState, useEffect } from "react";
 import ReviewHistory from "@/components/ReviewHistory";
 import Footer from "@/components/Footer";
 import SearchFilter from "@/components/SearchFilter";
-import { fetchUserDashboard } from "@/services/api";
+import { fetchUserDashboard } from "@/services/db/api";
 import liff from "@line/liff";
-import { searchPlaces } from "@/services/api";
+import { searchPlaces } from "@/services/db/api";
 
 import {
   FaCoins,

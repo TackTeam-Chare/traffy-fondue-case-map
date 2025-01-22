@@ -80,6 +80,7 @@ const processedCases = cases.map((caseItem) => {
       alert("ไม่พบพิกัดของสถานที่นี้");
     }
   };
+  
 
   return (
     <div className="mt-2 bg-white rounded-lg border border-gray-200 shadow-sm max-w-screen-sm mx-auto">
@@ -206,7 +207,7 @@ const processedCases = cases.map((caseItem) => {
 
                 {/* Details */}
                 <div className="space-y-3">
-
+  
 
   {/* หน่วยงานที่รับผิดชอบ */}
   <div className="flex items-start gap-2 text-gray-800">
@@ -225,6 +226,12 @@ const processedCases = cases.map((caseItem) => {
     <span className="text-sm font-semibold">
       ประเภท: <span className="font-normal">{caseItem.type || "ไม่ระบุประเภท"}</span>
     </span>
+  </div>
+  <div className="flex items-start gap-2 text-gray-800">
+    <MapPin className="w-4 h-4 text-emerald-600" />
+    <div>
+      <span className="text-sm font-semibold block">     {caseItem.address || "ไม่ระบุที่อยู่"}</span>
+    </div>
   </div>
 </div>
 
@@ -330,6 +337,16 @@ const processedCases = cases.map((caseItem) => {
                       <Navigation className="w-3 h-3 mr-1" />
                       นำทาง
                     </button> */}
+                     {/* Navigate Button */}
+        
+                  <button
+                    onClick={(e) => handleNavigateClick(caseItem, e)}
+                    className="flex items-center gap-1 px-4 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                  >
+                    <Navigation className="w-4 h-4" />
+                    นำทาง
+                  </button>
+               
                   </div>
                 </div>
 {/* Comments Section */}

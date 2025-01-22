@@ -34,6 +34,7 @@ const transformTraffyData = (data) => {
   return data.features.map((feature) => {
     const properties = feature.properties || {};
     const geometry = feature.geometry || {};
+    const coordinates = geometry.coordinates || []; // Correctly extracting coordinates array
 
     return {
       id: properties.message_id || null,
@@ -43,13 +44,13 @@ const transformTraffyData = (data) => {
       address: properties.address || "ไม่ระบุที่อยู่",
       organization: properties.org || [],
       responsibleOrg: properties.org_action || [],
-      coordinates: geometry.coordinates || [],
+      coordinates: coordinates, // Storing coordinates
+      latitude: coordinates.length === 2 ? Number.parseFloat(coordinates[1]) : null, // Extract latitude
+      longitude: coordinates.length === 2 ? Number.parseFloat(coordinates[0]) : null, // Extract longitude
       images: [
         ...(properties.photo_url ? [{ image_url: properties.photo_url }] : []), // รูปภาพก่อน
         ...(properties.after_photo ? [{ image_url: properties.after_photo }] : []), // รูปภาพหลัง
       ],
-      // photo: properties.photo_url || null,
-      // afterPhoto: properties.after_photo || null,
       timestamp: properties.timestamp || null,
       state: properties.state || "ไม่ระบุสถานะ",
       aiSummary: properties.ai?.summary || "ไม่มีข้อมูล",
@@ -63,6 +64,8 @@ const transformTraffyData = (data) => {
     };
   });
 };
+
+
 
 
 export const fetchFilteredCases = async ({ radius, status, lat, lng }) => {

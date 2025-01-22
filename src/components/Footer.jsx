@@ -7,7 +7,7 @@ import { GiAchievement } from "react-icons/gi";
 
 const Footer = ({ onOpenHistory, onOpenSearch }) => {
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-emerald-800/90 backdrop-blur-md text-white flex justify-around items-center py-3 shadow-lg z-50">
+<footer className="bg-emerald-800/90 backdrop-blur-md text-white flex justify-around items-center py-3 shadow-lg w-full">
       {/* หน้าแรก */}
       <Link href="/" className="flex flex-col items-center text-sm hover:text-yellow-400 transition">
         <MdHome size={24} />

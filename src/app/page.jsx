@@ -82,7 +82,8 @@ const handleFilterChange = useCallback(async () => {
 
   const statusOptions = [
     { value: "start", label: "รอรับเรื่อง" },
-    { value: "inprogress", label: "กำลังดำเนินการ" },
+    { value: "inprogress", label: "ดำเนินการ" },
+    { value: "finish", label: "เสร็จสิ้น" },
   ];
 
   return (
@@ -175,7 +176,7 @@ const handleFilterChange = useCallback(async () => {
         </section>
       )}
          {/* Footer */}
-         <Footer onOpenHistory={handleOpenHistory} onOpenSearch={handleOpenSearch} />
+         {/* <Footer  onOpenHistory={handleOpenHistory} onOpenSearch={handleOpenSearch} /> */}
     </div>
   );
 };

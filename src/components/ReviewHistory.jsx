@@ -11,7 +11,6 @@ import {
   AlertCircle,
   Loader2,
   Building2,
-  Ticket,
   FileType,
   Eye,
   ThumbsUp,
@@ -41,8 +40,10 @@ const ReviewHistory = ({ userId, isOpen, onClose }) => {
   
     if (days > 0) {
       return `${days} วัน ${hours} ชั่วโมง ที่แล้ว`;
+    // biome-ignore lint/style/noUselessElse: <explanation>
     } else if (hours > 0) {
       return `${hours} ชั่วโมง ที่แล้ว`;
+    // biome-ignore lint/style/noUselessElse: <explanation>
     } else {
       const minutes = Math.floor(diffInSeconds / 60);
       return `${minutes} นาที ที่แล้ว`;
@@ -131,6 +132,7 @@ const ReviewHistory = ({ userId, isOpen, onClose }) => {
     const totalStars = 5;
     return Array.from({ length: totalStars }, (_, index) => (
       <Star
+        // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
         key={index}
         className={`w-4 h-4 ${
           index < stars ? "text-yellow-400 fill-yellow-400" : "text-gray-300"

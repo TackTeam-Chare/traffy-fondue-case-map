@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { fetchCategories } from "@/services/api";
+import { fetchCategories } from "@/services/db/api";
 import {
   Search,
   Filter,

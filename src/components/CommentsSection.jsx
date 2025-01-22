@@ -78,14 +78,23 @@ const CommentsSection = ({ comments, status }) => {
         <ul className="space-y-4">
           {validComments.map((comment, index) => (
             <li
+              // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
               key={index}
               className="bg-white rounded-md shadow-sm p-4 flex items-start space-x-4 transition-all duration-300 hover:shadow-md"
             >
               {/* Avatar Section */}
               <div className="flex-shrink-0">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-800 font-bold shadow-md">
-                  {comment.user?.charAt(0).toUpperCase()}
-                </div>
+                {comment.profileImageUrl ? (
+                  <img
+                    src={comment.profileImageUrl}
+                    alt={`${comment.user || "ผู้ใช้งาน"}'s profile`}
+                    className="w-12 h-12 rounded-full object-cover shadow-md"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-800 font-bold shadow-md">
+                    {comment.user?.charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
 
               {/* Content Section */}
@@ -96,7 +105,7 @@ const CommentsSection = ({ comments, status }) => {
                   </h4>
                   <time
                     className="text-xs text-gray-500"
-                    title={formatDate(comment.timestamp)} // แสดงเวลาเต็มเมื่อ hover
+                    title={formatDate(comment.timestamp)} // Show full timestamp on hover
                   >
                     {timeSince(comment.timestamp)} ({formatDate(comment.timestamp)})
                   </time>

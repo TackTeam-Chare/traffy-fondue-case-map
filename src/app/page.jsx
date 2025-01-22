@@ -1,9 +1,10 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useCallback } from "react";
 import { ChevronDown, ChevronUp, MapPin, Filter } from "lucide-react";
 import CaseList from "@/components/CaseList";
 import { fetchFilteredCases } from "@/services/traffy-fondue/api";
 import { ClipLoader } from "react-spinners"; // Import spinner
+import Footer from "@/components/Footer";
 
 const Home = () => {
   const [radius, setRadius] = useState(50000); // Default to 50 km
@@ -14,26 +15,36 @@ const Home = () => {
   const [isStatusOpen, setIsStatusOpen] = useState(false); // Dropdown state for status
   const [isSearchActive, setIsSearchActive] = useState(false); // To differentiate between nearby & search cases
   const [isLoading, setIsLoading] = useState(true); // Loading state
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  const handleFilterChange = async () => {
-    if (!userLocation) return;
-
-    setIsLoading(true); // Show loading spinner
-    try {
-      const cases = await fetchFilteredCases({
-        radius,
-        status,
-        lat: userLocation.lat,
-        lng: userLocation.lng,
-      });
-      setFilteredCases(cases);
-      setIsSearchActive(true);
-    } catch (error) {
-      console.error("Error fetching filtered cases:", error);
-    } finally {
-      setIsLoading(false); // Hide loading spinner
-    }
+  const handleOpenHistory = () => {
+    setIsHistoryOpen(true);
   };
+
+  const handleOpenSearch = () => {
+    setIsSearchOpen(true);
+  };
+
+
+const handleFilterChange = useCallback(async () => {
+  if (!userLocation) return;
+  setIsLoading(true);
+  try {
+    const cases = await fetchFilteredCases({
+      radius,
+      status,
+      lat: userLocation.lat,
+      lng: userLocation.lng,
+    });
+    setFilteredCases(cases);
+    setIsSearchActive(true);
+  } catch (error) {
+    console.error("Error fetching filtered cases:", error);
+  } finally {
+    setIsLoading(false);
+  }
+}, [radius, status, userLocation]);
 
   // Fetch nearby cases on initial load using current user location
   useEffect(() => {
@@ -163,6 +174,8 @@ const Home = () => {
           <CaseList cases={filteredCases} isSearchActive={isSearchActive} />
         </section>
       )}
+         {/* Footer */}
+         <Footer onOpenHistory={handleOpenHistory} onOpenSearch={handleOpenSearch} />
     </div>
   );
 };

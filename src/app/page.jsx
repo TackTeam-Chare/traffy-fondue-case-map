@@ -72,7 +72,7 @@ const handleFilterChange = useCallback(async () => {
     if (userLocation) {
       handleFilterChange();
     }
-  }, [radius, status]);
+  }, [handleFilterChange, radius, status, userLocation]);
 
   const radiusOptions = [
     { value: 5000, label: "5 กิโลเมตร" },

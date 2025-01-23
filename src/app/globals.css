@@ -9,25 +9,7 @@ body {
   overflow-x: hidden;
 }
 
-footer {
-  z-index: 1000;
-}
-
 *{
   font-family: Anuphan;
 }
 
-.case-list {
-  display: block;
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-
-.footer {
-  z-index: 100;
-}
-
-.container {
-  overflow: hidden;
-}

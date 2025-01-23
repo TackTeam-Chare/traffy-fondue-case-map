@@ -3,6 +3,7 @@ import React, { useState, useEffect,useCallback } from "react";
 import { ChevronDown, ChevronUp, MapPin, Filter } from "lucide-react";
 import CaseList from "@/components/CaseList";
 import { fetchFilteredCases } from "@/services/traffy-fondue/api";
+import SkeletonCaseList from "@/components/SkeletonCaseList"; 
 import { ClipLoader } from "react-spinners"; // Import spinner
 import Footer from "@/components/Footer";
 
@@ -58,14 +59,16 @@ const handleFilterChange = useCallback(async () => {
   }, []);
 
   // Fetch nearby cases on location load
-  useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+    useEffect(() => {
     if (userLocation && !isSearchActive) {
       handleFilterChange();
     }
   }, [userLocation, isSearchActive]);
 
   // Fetch cases whenever radius or status changes
-  useEffect(() => {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+    useEffect(() => {
     if (userLocation) {
       handleFilterChange();
     }
@@ -78,6 +81,7 @@ const handleFilterChange = useCallback(async () => {
     { value: 20000, label: "20 กิโลเมตร" },
     { value: 50000, label: "50 กิโลเมตร" },
     { value: 100000, label: "100 กิโลเมตร" },
+    { value: 150000, label: "150 กิโลเมตร" },
   ];
 
   const statusOptions = [
@@ -164,7 +168,7 @@ const handleFilterChange = useCallback(async () => {
       </div>
 
       {/* Loading Animation */}
-      {isLoading ? (
+      {/* {isLoading ? (
         <div className="flex justify-center items-center min-h-[300px]">
           <ClipLoader color="#22c55e" size={50} />
           <span className="ml-4 text-green-500 font-medium">กำลังโหลดข้อมูล รอสักครู่...</span>
@@ -174,6 +178,11 @@ const handleFilterChange = useCallback(async () => {
         <section className="mb-6">
           <CaseList cases={filteredCases} isSearchActive={isSearchActive} />
         </section>
+      )} */}
+        {isLoading ? (
+        <SkeletonCaseList />
+      ) : (
+        <CaseList cases={filteredCases} isSearchActive={true} />
       )}
          {/* Footer */}
          {/* <Footer  onOpenHistory={handleOpenHistory} onOpenSearch={handleOpenSearch} /> */}

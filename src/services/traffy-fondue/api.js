@@ -65,9 +65,6 @@ const transformTraffyData = (data) => {
   });
 };
 
-
-
-
 export const fetchFilteredCases = async ({ radius, status, lat, lng }) => {
   try {
     console.log("Sending request to backend with params:", { radius, status, lat, lng }); // Debug

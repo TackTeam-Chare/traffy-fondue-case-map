@@ -54,20 +54,22 @@ const handleFilterChange = useCallback(async () => {
         const { latitude, longitude } = position.coords;
         setUserLocation({ lat: latitude, lng: longitude });
       },
-      (error) => console.error("Error getting user's location:", error)
+      (error) => {
+        console.error("Error getting user's location:", error);
+        // Fallback: Ask the user to input location manually
+        setUserLocation({ lat: fallbackLat, lng: fallbackLng });
+      }
     );
   }, []);
 
-  // Fetch nearby cases on location load
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
     useEffect(() => {
     if (userLocation && !isSearchActive) {
       handleFilterChange();
     }
-  }, [userLocation, isSearchActive]);
+  }, [userLocation, isSearchActive, handleFilterChange]);
 
-  // Fetch cases whenever radius or status changes
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+
+    // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
     useEffect(() => {
     if (userLocation) {
       handleFilterChange();
@@ -102,7 +104,8 @@ const handleFilterChange = useCallback(async () => {
       <div className="flex flex-wrap gap-4 justify-center mb-6">
         {/* Radius Filter */}
         <div className="relative inline-block text-left">
-          <button
+          {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+<button
             onClick={() => setIsRadiusOpen(!isRadiusOpen)}
             className={`flex items-center gap-2 px-4 py-2 border ${
               isRadiusOpen ? "border-green-700" : "border-green-500"
@@ -116,7 +119,8 @@ const handleFilterChange = useCallback(async () => {
           {isRadiusOpen && (
             <div className="absolute mt-2 w-full max-w-xs bg-white border border-gray-200 rounded-lg shadow-lg z-10">
               {radiusOptions.map((option) => (
-                <div
+                // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+<div
                   key={option.value}
                   onClick={() => {
                     setRadius(option.value);
@@ -135,7 +139,8 @@ const handleFilterChange = useCallback(async () => {
 
         {/* Status Filter */}
         <div className="relative inline-block text-left">
-          <button
+          {/* biome-ignore lint/a11y/useButtonType: <explanation> */}
+<button
             onClick={() => setIsStatusOpen(!isStatusOpen)}
             className={`flex items-center gap-2 px-4 py-2 border ${
               isStatusOpen ? "border-green-700" : "border-green-500"
@@ -149,7 +154,8 @@ const handleFilterChange = useCallback(async () => {
           {isStatusOpen && (
             <div className="absolute mt-2 w-full max-w-xs bg-white border border-gray-200 rounded-lg shadow-lg z-10">
               {statusOptions.map((option) => (
-                <div
+                // biome-ignore lint/a11y/useKeyWithClickEvents: <explanation>
+<div
                   key={option.value}
                   onClick={() => {
                     setStatus(option.value);

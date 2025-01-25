@@ -1,4 +1,5 @@
 import React from "react";
+import Image from 'next/image'
 import { Check, XCircle, MessageSquare } from "lucide-react";
 
 const CommentsSection = ({ comments, status }) => {
@@ -41,16 +42,15 @@ const CommentsSection = ({ comments, status }) => {
 
     if (diffInSeconds < 60) {
       return `${diffInSeconds} วินาทีที่แล้ว`;
-    } else if (diffInSeconds < 3600) {
+    }if (diffInSeconds < 3600) {
       const minutes = Math.floor(diffInSeconds / 60);
       return `${minutes} นาทีที่แล้ว`;
-    } else if (diffInSeconds < 86400) {
+    }if (diffInSeconds < 86400) {
       const hours = Math.floor(diffInSeconds / 3600);
       return `${hours} ชั่วโมงที่แล้ว`;
-    } else {
+    }
       const days = Math.floor(diffInSeconds / 86400);
       return `${days} วันที่แล้ว`;
-    }
   };
 
   return (
@@ -85,7 +85,9 @@ const CommentsSection = ({ comments, status }) => {
               {/* Avatar Section */}
               <div className="flex-shrink-0">
                 {comment.profileImageUrl ? (
-                  <img
+                  <Image
+                    width={500}
+                    height={500}
                     src={comment.profileImageUrl}
                     alt={`${comment.user || "ผู้ใช้งาน"}'s profile`}
                     className="w-12 h-12 rounded-full object-cover shadow-md"

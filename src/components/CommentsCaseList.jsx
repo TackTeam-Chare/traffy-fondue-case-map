@@ -1,5 +1,5 @@
 import { CalendarDays, UserCircle, ThumbsUp, ThumbsDown, MessageSquare } from "lucide-react";
-
+import Image from 'next/image'
 const CommentsCaseList = ({ comments }) => {
   if (!comments || comments.length === 0) {
     return null; // Hide entire section if no comments
@@ -46,7 +46,9 @@ const CommentsCaseList = ({ comments }) => {
          {/* User Avatar */}
          <div className="w-12 h-12 rounded-full bg-gray-100 overflow-hidden shadow-md">
             {comment.profileImageUrl ? (
-              <img
+              <Image
+                width={500}
+                height={500}
                 src={comment.profileImageUrl}
                 alt={`${comment.user || "ผู้ใช้งาน"}'s profile`}
                 className="object-cover w-full h-full"

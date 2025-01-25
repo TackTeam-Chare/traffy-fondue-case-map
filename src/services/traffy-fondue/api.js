@@ -69,8 +69,9 @@ export const fetchFilteredCases = async ({ radius, status, lat, lng }) => {
   try {
     console.log("Sending request to backend with params:", { radius, status, lat, lng }); // Debug
 
-    const response = await api.get(`/api/traffy/nearby`, {
+    const response = await api.get("/api/traffy/nearby", {
       params: { radius, state: status, lat, lng },
+      timeout: 10000,
     });
 
     console.log("Response from backend:", response.data);

@@ -1,6 +1,7 @@
 
 "use client";
 import React, { useEffect, useState } from "react";
+import Image from 'next/image'
 import axios from "axios";
 import {
   X,
@@ -285,8 +286,7 @@ const ReviewHistory = ({ userId, isOpen, onClose }) => {
       <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-all rounded-lg flex items-center justify-center">
         <span className="text-white text-sm">ก่อนดำเนินการ</span>
       </div>
-      <img 
-        src={item.photo} 
+      <Image        src={item.photo} 
         alt="รูปก่อนดำเนินการ"
         className="w-32 h-32 object-cover rounded-lg"
       />
@@ -299,8 +299,7 @@ const ReviewHistory = ({ userId, isOpen, onClose }) => {
       <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-all rounded-lg flex items-center justify-center">
         <span className="text-white text-sm">หลังดำเนินการ</span>
       </div>
-      <img 
-        src={item.photoAfter} 
+      <Image        src={item.photoAfter} 
         alt="รูปหลังดำเนินการ"
         className="w-32 h-32 object-cover rounded-lg"
       />
@@ -315,9 +314,10 @@ const ReviewHistory = ({ userId, isOpen, onClose }) => {
       <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-all rounded-lg flex items-center justify-center">
         <span className="text-white text-sm">รูปที่โหวต</span>
       </div>
-      <img 
-  src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${image}`} 
+      <Image  src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/uploads/${image}`} 
   alt={`รูปที่โหวต-${index + 1}`}
+  width={500}
+  height={500}
   className="w-32 h-32 object-cover rounded-lg"
 />
 
